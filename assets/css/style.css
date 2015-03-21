@@ -17,6 +17,10 @@ header span.glyphicon-tower {
     padding-top: 5px;
 }
 
+section {
+    margin: 0 25px !important;
+}
+
 .section {
     background: #eee;
     border: 1px solid lightgrey;
@@ -26,23 +30,15 @@ header span.glyphicon-tower {
 
 #main {
     height: 600px;
-    width: 65%;
-    margin: 0 0 15px 25px;
-    float: left;
 }
 
 #catalogs {
     height: 335px;
-    width: 25%;
-    margin: 0 25px 15px 0;
-    float: right;
 }
 
-#highscores {
+#highscore {
     height: 250px;
-    width: 25%;
-    margin: 0 25px 15px 0;
-    float: right;
+    margin-top: 15px;
 }
 
 footer {
