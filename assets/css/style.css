@@ -1,0 +1,54 @@
+body {
+    font-family: 'Ubuntu', sans-serif;
+    color: darkslategrey;
+}
+
+header {
+    padding: 0 25px;
+}
+
+header span {
+    font-size: 25px;
+}
+
+header span.glyphicon-tower {
+    color: orangered;
+    margin-right: 10px;
+    padding-top: 5px;
+}
+
+.section {
+    background: #eee;
+    border: 1px solid lightgrey;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#main {
+    height: 600px;
+    width: 65%;
+    margin: 0 0 15px 25px;
+    float: left;
+}
+
+#catalogs {
+    height: 335px;
+    width: 25%;
+    margin: 0 25px 15px 0;
+    float: right;
+}
+
+#highscores {
+    height: 250px;
+    width: 25%;
+    margin: 0 25px 15px 0;
+    float: right;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    color: grey;
+}
