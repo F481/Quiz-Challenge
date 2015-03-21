@@ -7,14 +7,13 @@ header {
     padding: 0 25px;
 }
 
-header span {
-    font-size: 25px;
+span {
+    font-size: 20px;
 }
 
-header span.glyphicon-tower {
+span.glyphicon {
     color: orangered;
     margin-right: 10px;
-    padding-top: 5px;
 }
 
 section {
@@ -22,7 +21,7 @@ section {
 }
 
 .section {
-    background: #eee;
+    background: #f3f3f3;
     border: 1px solid lightgrey;
     border-radius: 10px;
     padding: 10px;
