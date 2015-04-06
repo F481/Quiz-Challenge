@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xs:element name="fragenkatalog">
 		<xs:complexType>
-			<xs:sequence maxOccurs="unbounded">
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
 				<xs:element ref="fragenblock"/>
 			</xs:sequence>
 			<xs:attribute name="name" type="xs:string" use="required"/>
