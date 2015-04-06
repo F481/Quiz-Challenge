@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="fragenkatalog">
+		<xs:complexType>
+			<xs:sequence maxOccurs="unbounded">
+				<xs:element ref="fragenblock"/>
+			</xs:sequence>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+			<xs:attribute name="fragenanzahl" type="xs:integer" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="fragenblock">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="frage"/>
+				<xs:element ref="antwort"/>
+				<xs:element ref="antwort"/>
+				<xs:element ref="antwort"/>
+				<xs:element ref="antwort"/>
+			</xs:sequence>
+			<xs:attribute name="timeout" type="xs:integer" default="10"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="frage">
+		<xs:complexType mixed="true"/>
+	</xs:element>
+	<xs:element name="antwort">
+		<xs:complexType mixed="true">
+			<xs:attribute name="richtig" type="xs:string" default="false"/>
+		</xs:complexType>
+	</xs:element>	
+</xs:schema>
