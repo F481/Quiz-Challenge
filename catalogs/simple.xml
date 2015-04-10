@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type='text/xsl' href='../xsl/xml2html.xsl'?>
 <fragenkatalog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="fragenkatalog-schema.xsd" name="simple" fragenanzahl="6">
 	<fragenblock>
 		<frage>Welcher Mechanismus kann unter Unix zur Kommunikation über das Netzwerk verwendet werden?</frage>

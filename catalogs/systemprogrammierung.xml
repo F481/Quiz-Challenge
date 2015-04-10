@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type='text/xsl' href='../xsl/xml2html.xsl'?>
 <fragenkatalog  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="fragenkatalog-schema.xsd" name="Systemprogrammierung" fragenanzahl="12">
 	<fragenblock timeout="30">
 		<frage>Ein Thread soll auf ein durch einen anderen Thread ausgelöstes Ereignis warten. Welcher Mechanismus ist geeignet?</frage>
