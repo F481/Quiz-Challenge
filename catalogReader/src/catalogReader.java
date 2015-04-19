@@ -76,7 +76,7 @@ public class catalogReader {
 	 */
 	private String[] listFilesInfolder(File folder) {
 		ArrayList<String> fileList = new ArrayList<String>();
-	    // fuege der Liste alle Dateien aus dem Verzeichnis hinzu
+	    	// fuege der Liste alle Dateien aus dem Verzeichnis hinzu
 		for (File fileEntry : folder.listFiles()) {
 	    	fileList.add(fileEntry.getAbsolutePath());
 	    }
