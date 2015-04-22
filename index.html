@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quiz-Challenge</title>
 
+    <!-- jQuery -->
+    <script src="assets/libs/jquery-1.11.2.min.js"></script>
+
     <!-- Bootstrap -->
     <link href="assets/libs/bootstrap-3.3.4-dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="assets/libs/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
 
-    <!-- jQuery -->
-    <script src="assets/libs/jquery-1.11.2.min.js"></script>
     <script src="assets/libs/marquee.js"></script>
+    <script src="assets/js/quiz.js"></script>
 
     <link href="assets/css/style.css" rel="stylesheet">
     <link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
@@ -26,8 +28,8 @@
         <div class="row">
             <div id="main" class="section col-md-8">
                 <form>
-                    <input type="text" class="form-control" placeholder="Spielername" />
-                    <button type="submit" class="btn btn-default">
+                    <input type="text" class="form-control login-input" placeholder="Spielername" />
+                    <button type="button" class="btn btn-default login-btn">
                         Anmelden
                         <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
                     </button>
@@ -70,6 +72,18 @@
             </div>
         </div>
     </section>
+
+    <!-- divs for bootstrap alerts -->
+    <div id="overlay"></div>
+    <div class="alert alert-success" role="alert">
+        <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <p></p>
+    </div>
+    <div class="alert alert-danger" role="alert">
+        <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <p></p>
+    </div>
+
     <footer>Gruppe Frick, Schwenk, Strohm</footer>
 </body>
 </html>
