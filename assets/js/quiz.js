@@ -10,6 +10,19 @@ $(document).ready(function() {
     $('.start-btn').on('click', function() {
         // TODO
         openAlert('success', '"Spiel starten" Button gedrückt!');
+        $('#main').empty();
+        $('#main').html("<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>")
+    });
+
+    $('p.catalog').on('click', function() {
+        $('.catalog').css('background-color', 'transparent');
+        $(this).css('background-color', 'orangered');
+    });
+
+    $('.playerlist').on('click', function() {
+        alert($(this).val());
+        $('#highscore table tbody:first').prepend($(this).text());
+        $(this).remove();
     });
 
 });
@@ -28,7 +41,7 @@ function addPlayerToList(playerName) {
         $('#highscore table tbody tr td:nth-child(3)').text(0);
     } else {
         // otherwise we append row for row with the needed information
-        $('#highscore table tbody:last').append('<tr><td>' + parseInt(playerCounter + 1) + '</td><td>' + playerName + '</td><td>0</td></tr>')
+        $('#highscore table tbody:last').append('<tr class="playerlist"><td>' + parseInt(playerCounter + 1) + '</td><td>' + playerName + '</td><td>0</td></tr>')
     }
 
     playerCounter = playerCounter + 1;

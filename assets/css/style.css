@@ -59,6 +59,10 @@ footer {
     color: green;
 }
 
+p.catalog:hover {
+    cursor: pointer;
+}
+
 #overlay {
     position: absolute;
     top: 0;
