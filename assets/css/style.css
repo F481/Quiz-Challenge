@@ -49,6 +49,16 @@ footer {
     color: grey;
 }
 
+.start-btn {
+    position: relative;
+    top: 35%;
+    left: 43%;
+}
+
+.start-btn span {
+    color: green;
+}
+
 #overlay {
     position: absolute;
     top: 0;
