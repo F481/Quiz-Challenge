@@ -4,37 +4,37 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quiz-Challenge</title>
-
-    <!-- jQuery -->
-    <script src="assets/libs/jquery-1.11.2.min.js"></script>
-
+	
+	<!-- Scripts -->
+	<script src="assets/js/quiz.js" type="text/javascript"></script>
+	
     <!-- Bootstrap -->
     <link href="assets/libs/bootstrap-3.3.4-dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="assets/libs/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-
-    <script src="assets/libs/marquee.js"></script>
-    <script src="assets/js/quiz.js"></script>
 
     <link href="assets/css/style.css" rel="stylesheet">
     <link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>
 
 </head>
-<body>
+<body onload="init();">
     <header class="page-header">
-        <marquee><span class="glyphicon glyphicon-tower" aria-hidden="true"> Quiz-Challenge</span></marquee>
+        <input id="inputLauftext" type="text" readonly="readonly" size="200">
+		<p><p><p>
+		<span class="glyphicon glyphicon-tower" aria-hidden="true"></span>
+        <span>Quiz-Challenge</span>
     </header>
 
     <section class="container-fluid">
         <div class="row">
             <div id="main" class="section col-md-8">
                 <form>
-                    <input type="text" class="form-control login-input" placeholder="Spielername" />
-                    <button type="button" class="btn btn-default login-btn">
+                    <input id="inputName" type="text" class="form-control" placeholder="Spielername" />
+                    <button id="buttonLogin" type="button" class="btn btn-default">
                         Anmelden
                         <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
                     </button>
                 </form>
-                <button type="button" class="btn btn-default start-btn" disabled="disabled">
+                <button id="buttonStart" type="button" class="btn btn-default start-btn" disabled="disabled">
                     Spiel starten
                     <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
                 </button>
@@ -46,9 +46,9 @@
                             <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
                             <span>Catalogs</span>
                         </div>
-                        <p></p>
-                        <p class="catalog">Simple Catalog</p>
-                        <p class="catalog">SystemProg Catalog</p>
+                        <div class="catalogList" >Katalog 1</div>
+                        <div class="catalogList" >Katalog 2</div>
+                        <div class="catalogList" >Katalog 3</div>
                     </div>
                 </div>
                 <div class="row">
@@ -65,12 +65,15 @@
                                     <td>Score</td>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr class="playerlist">
-                                    <td>Keine Spieler!</td>
+                            <tbody id="tablePlayerlistBody">
+                                <tr id="listPlayer1">
+                                    <td>Keine Spieler</td>
                                     <td></td>
                                     <td></td>
                                 </tr>
+                                <tr id="listPlayer2"></tr>
+                                <tr id="listPlayer3"></tr>
+                                <tr id="listPlayer4"></tr>
                             </tbody>
                         </table>
                     </div>
@@ -78,18 +81,6 @@
             </div>
         </div>
     </section>
-
-    <!-- divs for bootstrap alerts -->
-    <div id="overlay"></div>
-    <div class="alert alert-success" role="alert">
-        <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <p></p>
-    </div>
-    <div class="alert alert-danger" role="alert">
-        <button type="button" class="close"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <p></p>
-    </div>
-
     <footer>Gruppe Frick, Schwenk, Strohm</footer>
 </body>
 </html>

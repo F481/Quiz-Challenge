@@ -1,77 +1,133 @@
 var playerCounter = 0;
 
-$(document).ready(function() {
-    $(".alert, #overlay, #loader").hide();
 
-    $('.login-btn').on('click', function() {
-        addPlayerToList($('.login-input').val())
-    });
+function init(){
+	
+	lauftext();
+    initCataloglist();
 
-    $('.start-btn').on('click', function() {
-        // TODO
-        openAlert('success', '"Spiel starten" Button gedrückt!');
-        $('#main').empty();
-        $('#main').html("<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>")
-    });
+	var buttonLogin = window.document.getElementById("buttonLogin");
+	buttonLogin.addEventListener("click",clickedLogin,true);
 
-    $('p.catalog').on('click', function() {
-        $('.catalog').css('background-color', 'transparent');
-        $(this).css('background-color', 'orangered');
-    });
+    var buttonStart = window.document.getElementById("buttonStart");
+    buttonStart.addEventListener("click",clickedStart,true);
+}
 
-    $('.playerlist').on('click', function() {
-        alert($(this).val());
-        $('#highscore table tbody:first').prepend($(this).text());
-        $(this).remove();
-    });
 
-});
-
-function addPlayerToList(playerName) {
-    // if playername is emtpy, show an error alert
-    if (playerName == "") {
-        openAlert('danger', 'Bitte geben Sie einen Spielernamen an!');
-        return;
+function initCataloglist() {
+    // get catalogs and add event listener
+    var catalogArray = document.getElementsByClassName("catalogList");
+    for(var i = 0; i < catalogArray.length; i++) {
+        catalogArray[i].addEventListener("click", clickedCatalog, true);
     }
+}
 
-    // we have to add the first player in a special way, because there is already one row with "Keine Spieler!"
-    if (playerCounter == 0) {
-        $('#highscore table tbody tr td:first').text(1);
-        $('#highscore table tbody tr td:nth-child(2)').text(playerName);
-        $('#highscore table tbody tr td:nth-child(3)').text(0);
-    } else {
-        // otherwise we append row for row with the needed information
-        $('#highscore table tbody:last').append('<tr class="playerlist"><td>' + parseInt(playerCounter + 1) + '</td><td>' + playerName + '</td><td>0</td></tr>')
+
+
+var begin = 0;
+
+function lauftext() {	
+	
+	var text = "Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * Quiz-Webprogrammierung * * * * * * * * * * ";
+	var end = text.length;
+
+    // cut text at front and append at the end
+	document.getElementById("inputLauftext").value = text.substring(begin,end) + text.substring(0,begin);
+	begin ++;
+	if(begin >= end){ 
+ 		begin = 0;
+	}
+	// speed of text - higher -> slower
+	window.setTimeout("lauftext()", 150); 
+}
+
+
+function clickedLogin(event){
+
+    // get value of input field
+	var inputName = window.document.getElementById("inputName");
+	var playerName = inputName.value;
+
+    // verify user  name
+	if (playerName === ""){
+		alert("Es wurde kein Spielername eingegeben!");
+	} else {
+        updatePlayerList(playerName);
+	}
+	event.stopPropagation();
+}
+
+function updatePlayerList(playerName){
+
+    // update player lists
+    if(document.getElementById("listPlayer1").firstElementChild.innerHTML == "Keine Spieler") {
+        // set player properties + add event listener
+        document.getElementById("listPlayer1").firstElementChild.innerHTML = "1";
+        document.getElementById("listPlayer1").children[1].innerHTML = playerName;
+        document.getElementById("listPlayer1").addEventListener("click", clickedPlayer, true);
+        // ad cells to row below
+        document.getElementById("listPlayer2").innerHTML = "<td></td><td></td><td></td>";
+    }
+    else if (document.getElementById("listPlayer2").firstElementChild.innerHTML === "") {
+        document.getElementById("listPlayer2").firstElementChild.innerHTML = "2";
+        document.getElementById("listPlayer2").children[1].innerHTML = playerName;
+        document.getElementById("listPlayer2").addEventListener("click", clickedPlayer, true);
+        document.getElementById("listPlayer3").innerHTML = "<td></td><td></td><td></td>";
+    }
+    else if (document.getElementById("listPlayer3").firstElementChild.innerHTML === "") {
+        document.getElementById("listPlayer3").firstElementChild.innerHTML = "3";
+        document.getElementById("listPlayer3").children[1].innerHTML = playerName;
+        document.getElementById("listPlayer3").addEventListener("click", clickedPlayer, true);
+        document.getElementById("listPlayer4").innerHTML = "<td></td><td></td><td></td>";
+    }
+    else if (document.getElementById("listPlayer4").firstElementChild.innerHTML === "") {
+        document.getElementById("listPlayer4").firstElementChild.innerHTML = "4";
+        document.getElementById("listPlayer4").children[1].innerHTML = playerName;
+        document.getElementById("listPlayer4").addEventListener("click", clickedPlayer, true);
     }
 
     playerCounter = playerCounter + 1;
 
+    // disable login button if player limit is reached
+    if (playerCounter >= 4) {
+        document.getElementById('buttonLogin').disabled = true;
+    }
+
+    // enable start button
     if (playerCounter >= 2) {
-        $('.start-btn').attr('disabled', false);
+        document.getElementById('buttonStart').disabled = false;
     }
 }
 
 
-/* Hilfefunktionen für Alerts */
-function showOverlay(show) {
-    show ? $("#overlay").show() : $("#overlay").hide();
+function clickedCatalog(event){
+    // get all catalogs and set background to default
+    var catalogArray = window.document.getElementsByClassName("catalogList");
+    for(var i = 0; i < catalogArray.length; i++) {
+        catalogArray[i].style.backgroundColor="#f3f3f3";
+    }
+    // highlight clicked catalog
+    event.target.style.backgroundColor="#ffa500";
+
+    event.stopPropagation();
 }
 
-function openAlert(type, text) {
-    showOverlay(true);
 
-    switch (type) {
-        case "success":
-            $(".alert-success p").text(text);
-            $(".alert-success").show();
-            break;
-        case "danger":
-            $(".alert-danger p").text(text);
-            $(".alert-danger").show();
-    }
+function clickedStart(event){
 
-    $(".alert .close:button").click(function () {
-        $(".alert").hide();
-        showOverlay(false);
-    });
-};
+    // clean up main div
+    document.getElementById("main").innerHTML = "";
+
+    // update main div with question
+    document.getElementById("main").innerHTML = "<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>";
+
+    event.stopPropagation();
+}
+
+
+function clickedPlayer(event) {
+
+    var firstPlayer = document.getElementById("tablePlayerlistBody").firstChild;
+
+    firstPlayer.parentNode.insertBefore(event.target.parentNode, firstPlayer);
+}
