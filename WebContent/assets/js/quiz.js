@@ -1,16 +1,18 @@
-var playerCounter = 0;
+// var playerCounter = 0;
 
 
 function init(){
 	
-	lauftext();
+	// lauftext();
     initCataloglist();
 
-	var buttonLogin = window.document.getElementById("buttonLogin");
+	/*
+    var buttonLogin = window.document.getElementById("buttonLogin");
 	buttonLogin.addEventListener("click",clickedLogin,true);
 
     var buttonStart = window.document.getElementById("buttonStart");
     buttonStart.addEventListener("click",clickedStart,true);
+    */
 }
 
 
@@ -23,7 +25,7 @@ function initCataloglist() {
 }
 
 
-
+/*
 var begin = 0;
 
 function lauftext() {	
@@ -40,8 +42,8 @@ function lauftext() {
 	// speed of text - higher -> slower
 	window.setTimeout("lauftext()", 150); 
 }
-
-
+*/
+/*
 function clickedLogin(event){
 
     // get value of input field
@@ -98,7 +100,7 @@ function updatePlayerList(playerName){
         document.getElementById('buttonStart').disabled = false;
     }
 }
-
+*/
 
 function clickedCatalog(event){
     // get all catalogs and set background to default
@@ -112,7 +114,7 @@ function clickedCatalog(event){
     event.stopPropagation();
 }
 
-
+/*
 function clickedStart(event){
 
     // clean up main div
@@ -131,3 +133,4 @@ function clickedPlayer(event) {
 
     firstPlayer.parentNode.insertBefore(event.target.parentNode, firstPlayer);
 }
+*/
