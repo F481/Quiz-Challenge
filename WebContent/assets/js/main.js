@@ -1,18 +1,128 @@
 // var playerCounter = 0;
 
+var socket;
+var readyToSend = false;
+
+var playerId = -1;
+
+
 
 function init(){
-	
-	// lauftext();
-    initCataloglist();
 
-	/*
+    // lauftext();
+    // initCataloglist();
+
+    // open websocket
+    var url = 'ws:localhost:8080/Quiz-Challenge-Server/SocketHandler';
+    socket = new WebSocket(url);
+
+    // event handler websocket
+    socket.onopen = function(){
+        readyToSend = true;
+    };
+
+    socket.onerror = function(event){
+        alert("Websocket Error: " + event.data);
+    };
+
+    socket.onclose = function(event){
+        console.log("Websocket geschlossen: " + event.data);
+    };
+
+    socket.onmessage = receiveWSMessage;
+
+    // listener login + start button
     var buttonLogin = window.document.getElementById("buttonLogin");
-	buttonLogin.addEventListener("click",clickedLogin,true);
+    buttonLogin.addEventListener("click",clickedLogin,true);
 
+    // var buttonStart = window.document.getElementById("buttonStart");
+    // buttonStart.addEventListener("click",clickedStart,true);
+
+}
+
+
+function receiveWSMessage(message){
+		
+	var parsedJSONMessage = JSON.parse(message.data);
+	
+	console.log("Received message type: " + parsedJSONMessage.messageType);
+	
+	switch (parsedJSONMessage.messageType){
+		case 2: // LoginResponseOK
+			console.log("Player ID: " + parsedJSONMessage.playerID);
+            		playerId = parsedJSONMessage.playerID;
+			processSuccessfulLogin();
+			break;
+		case 5: // CatalogChange
+			break;
+		case 7: // StartGame
+			break;
+		case 9: // Question
+			break;
+		case 11: // Question Result
+			break;
+		case 12: // GameOver
+			break;
+		case 255: // Error
+			break;
+		default:
+			console.log("Received unknown message type");
+			break;			
+	}
+}
+
+
+function sendWSMessage(type){
+	// verify if websocket is ready to send
+	if(readyToSend){
+		
+		var messageType = type.toString();
+		var jsonData;
+		
+		switch(type){
+			case 1: // LoginRequest
+		  		// get value of input field
+				var inputName = window.document.getElementById("inputName");
+				var playerName = inputName.value;
+		       		 // LoginRequest with type + playername
+				jsonData = JSON.stringify({
+					messageType : messageType,
+					loginName : playerName
+				});
+
+				break;
+			case 5: // CatalogChange
+				break;
+			case 7: // StartGame
+				break;
+			case 8: // QuestionRequest
+				break;
+			case 10: // QuestionAnswered
+				break;
+			default: // unknown type
+				console.log("Can't send - unknown message type");
+				break;
+		}
+		// send message
+		socket.send(jsonData);
+	} 
+	// socket not ready ro send
+	else {
+		alert("Verbindung zum Server wurde noch nicht aufgebaut");
+	}
+}
+
+
+function processSuccessfulLogin(){
+	
     var buttonStart = window.document.getElementById("buttonStart");
-    buttonStart.addEventListener("click",clickedStart,true);
-    */
+	if(playerId == 0){
+		// Spielleiter
+		buttonStart.textContent = "Warte auf weitere Spieler";
+	} else {
+		// kein Spielleiter
+		buttonStart.textContent = "Warte auf Spielstart";
+	}
 }
 
 
@@ -43,22 +153,24 @@ function lauftext() {
 	window.setTimeout("lauftext()", 150); 
 }
 */
-/*
+
+
 function clickedLogin(event){
 
-    // get value of input field
 	var inputName = window.document.getElementById("inputName");
 	var playerName = inputName.value;
-
-    // verify user  name
+    	// verify user  name
 	if (playerName === ""){
 		alert("Es wurde kein Spielername eingegeben!");
 	} else {
-        updatePlayerList(playerName);
-	}
+		// send LoginRequest
+		sendWSMessage(1);
+	}	
 	event.stopPropagation();
 }
 
+
+/*
 function updatePlayerList(playerName){
 
     // update player lists
@@ -134,3 +246,5 @@ function clickedPlayer(event) {
     firstPlayer.parentNode.insertBefore(event.target.parentNode, firstPlayer);
 }
 */
+
+
