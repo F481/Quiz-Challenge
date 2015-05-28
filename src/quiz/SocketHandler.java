@@ -103,6 +103,8 @@ public class SocketHandler {
 					e2.printStackTrace();
 					sendError(session, 1, "LoginResponseOK konnte nicht erstellt werden!");
 				}
+				// sende aktualisierte Spielerliste an alle Spieler
+				sendPlayerList();
 				break;
 			case 5: // CatalogChange
 				System.out.println("typ 5 empfangen - setzte aktiven Katalog");				
@@ -134,6 +136,25 @@ public class SocketHandler {
 		
 	}
 	
+
+	public void sendPlayerList(){
+		
+		// sende aktualisierte Spielerliste an alle Spieler
+		
+		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+			System.out.println("sende typ 6 an spieler: " + i);
+			Session s = ConnectionManager.getSession(i);
+			try {
+				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
 	
 	
 	

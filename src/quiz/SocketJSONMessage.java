@@ -3,6 +3,9 @@ package quiz;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import application.Player;
+import application.Quiz;
+
 
 
 public class SocketJSONMessage {
@@ -75,22 +78,63 @@ public class SocketJSONMessage {
 				System.out.println("CatalogChange 2: " + this.messageData[0]);
 				jObject.put("catalogName", this.messageData[0]);
 				break;
-			case 7: //
+			case 7: // StartGame
 				break;
-			case 9: //
+			case 9: // Quesetion
 				break;
-			case 11: //
+			case 11: // QuestionResult
 				break;
 			case 12: // GameOver
 				break;
 			case 255: // Error
 				break;
+			default:
+				break;				
 		}
 		
 		// konvertiere JSON-Obejt zu String
 		this.JSONString = jObject.toString();		
 	}
 	
+	
+	public SocketJSONMessage(int messageType) throws JSONException {
+
+		System.out.println("buld new socketjsonmessage");
+		
+		this.messageType = messageType;
+				
+		// erstelle JSONObject und setze MessageType
+		JSONObject jObject = new JSONObject();
+		jObject.put("messageType", messageType);
+		
+		switch(this.messageType){
+			case 6: // PlayerList
+				Quiz quiz = Quiz.getInstance();
+				// baue Spielerliste
+				int playerCounter = 0;
+		    	for(Player pTemp : quiz.getPlayerList()){    		
+		    		// build string for key player
+		    		String playerX = "player" + playerCounter + "Name";
+		    		jObject.put(playerX, pTemp.getName());
+		    		// build string for key score		    		
+		    		String scoreX = "player" + playerCounter + "Score";
+		    		String score = Long.toString(pTemp.getScore());
+		    		jObject.put(scoreX, score);
+
+		    		playerCounter++;
+		    	}
+				break;
+			default:
+				break;				
+		}
+    	
+		// konvertiere JSON-Obejt zu String
+		this.JSONString = jObject.toString();
+	
+	}	
+	
+
+
 	public String getJsonString() {
 		return JSONString;
 	}

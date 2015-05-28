@@ -3,10 +3,13 @@ var socket;
 var readyToSend = false;
 
 // AJAX
-var request
+var request;
 
 // Player
 var playerId = -1;
+
+// Playerliste
+var curPlayerList;
 
 // Kataloge
 var activeCatalog = "";
@@ -58,9 +61,14 @@ function receiveWSMessage(message){
 			processSuccessfulLogin();
 			break;
 		case 5: // CatalogChange
-			console.log("Catalog changed: " + parsedJSONMessage.catalogName)
+			console.log("Catalog changed: " + parsedJSONMessage.catalogName);
 			activeCatalog = parsedJSONMessage.catalogName;
 			highlichtChoosenCatalog(activeCatalog);
+			break;
+		case 6: // StartGame
+			console.log("Playerlist: ");
+			var playerlist = parsedJSONMessage;
+			updatePlayerList(playerlist);
 			break;
 		case 7: // StartGame
 			break;
@@ -210,6 +218,76 @@ function highlichtChoosenCatalog(catalogName){
     		catalogArray[i].style.backgroundColor="#f3f3f3";
     	}
     }
+}
+
+
+function updatePlayerList(playerlist){
+	// var length = playerlist.keys.length;
+	// alert("score " + playerlist.playerScore);
+	var table = document.getElementById("highscoreTable").getElementsByTagName("tbody")[0];
+	
+	while (table.firstChild) {
+		table.removeChild(table.firstChild);
+	}
+	
+	if(playerlist.hasOwnProperty('player2Name')){
+		console.log("has player1Name property");
+		// highscore entry for player 1
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "1";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player0Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player0Score;
+		// highscore entry for player 2		
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "2";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player1Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player1Score;
+		// highscore entry for player 3
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "3";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player2Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player2Score;
+	}
+	else if(playerlist.hasOwnProperty('player1Name')){
+		console.log("has player1Name property");
+		// highscore entry for player 1
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "1";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player0Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player0Score;
+		// highscore entry for player 2		
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "2";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player1Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player1Score;	
+	}
+	else {
+		console.log("has player0Name property");
+		// highscore entry for player 1
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = "1";
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerlist.player0Name;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerlist.player0Score;
+	}
+	
 }
 
 
