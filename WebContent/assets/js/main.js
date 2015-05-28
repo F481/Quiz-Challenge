@@ -6,7 +6,8 @@ var readyToSend = false;
 var request;
 
 // Player
-var playerId = -1;
+playerId = -1;
+var playerCount = 0;
 
 // Playerliste
 var curPlayerList;
@@ -42,8 +43,8 @@ function init(){
     var buttonLogin = window.document.getElementById("buttonLogin");
     buttonLogin.addEventListener("click",clickedLogin,true);
 
-    // var buttonStart = window.document.getElementById("buttonStart");
-    // buttonStart.addEventListener("click",clickedStart,true);
+    var buttonStart = window.document.getElementById("buttonStart");
+    buttonStart.addEventListener("click",clickedStart,true);
 
 }
 
@@ -71,6 +72,10 @@ function receiveWSMessage(message){
 			updatePlayerList(playerlist);
 			break;
 		case 7: // StartGame
+			// clear login stuff
+			clearLoginDiv();
+			// request first question
+			sendWSMessage(8);
 			break;
 		case 9: // Question
 			break;
@@ -116,6 +121,12 @@ function sendWSMessage(type){
 				console.log("send MessageType 5");
 				break;
 			case 7: // StartGame
+				var catalogName = activeCatalog;
+		        // StartGame with type + catalogname
+				jsonData = JSON.stringify({
+					messageType : messageType,
+					catalogName : catalogName
+				});
 				break;
 			case 8: // QuestionRequest
 				break;
@@ -174,7 +185,7 @@ function ajaxServerCatalogResponse(){
 	// State 4 - die Antwort des Servers liegt vollständig vor
 	if(request.readyState == 4){
 		var answer = request.responseXML.getElementsByTagName("catalogName");
-		for(var i=0;i < answer.length; i++){
+		for(var i = 0; i < answer.length; i++){
 			// erzeuge div mit Text, weise CSS-Klasse hinzu
 			var catalogDiv = document.createElement("div");
 			catalogDiv.className = "catalogList";
@@ -187,7 +198,7 @@ function ajaxServerCatalogResponse(){
 }
 
 function clickedCatalog(event){
-    if(playerId == 0){
+	if(playerId == 0){
     	// get all catalogs and set background to default
         var catalogArray = window.document.getElementsByClassName("catalogList");
         for(var i = 0; i < catalogArray.length; i++) {
@@ -201,12 +212,21 @@ function clickedCatalog(event){
         
         // send catalog change
         sendWSMessage(5);
+        
+        
+		if(playerCount >= 2){
+			var buttonStart = window.document.getElementById("buttonStart");
+			buttonStart.textContent = "Spiel starten";
+			buttonStart.disabled = false;
+			console.log("spielerleiter highlichtChoosenCatalog end");
+		}
     }
-    
+	    
     event.stopPropagation();
 }
 
 function highlichtChoosenCatalog(catalogName){
+	
 	// get all catalogs and set background to default
     var catalogArray = window.document.getElementsByClassName("catalogList");
     for(var i = 0; i < catalogArray.length; i++) {
@@ -231,7 +251,6 @@ function updatePlayerList(playerlist){
 	}
 	
 	if(playerlist.hasOwnProperty('player2Name')){
-		console.log("has player1Name property");
 		// highscore entry for player 1
 		var row = table.insertRow();
 		var cellRank = row.insertCell();
@@ -256,9 +275,10 @@ function updatePlayerList(playerlist){
 		cellPlayer.textContent = playerlist.player2Name;
 		var cellScore = row.insertCell();
 		cellScore.textContent = playerlist.player2Score;
+		
+		playerCount = 3;
 	}
 	else if(playerlist.hasOwnProperty('player1Name')){
-		console.log("has player1Name property");
 		// highscore entry for player 1
 		var row = table.insertRow();
 		var cellRank = row.insertCell();
@@ -274,10 +294,11 @@ function updatePlayerList(playerlist){
 		var cellPlayer = row.insertCell();
 		cellPlayer.textContent = playerlist.player1Name;
 		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player1Score;	
+		cellScore.textContent = playerlist.player1Score;
+		
+		playerCount = 2;
 	}
 	else {
-		console.log("has player0Name property");
 		// highscore entry for player 1
 		var row = table.insertRow();
 		var cellRank = row.insertCell();
@@ -286,6 +307,22 @@ function updatePlayerList(playerlist){
 		cellPlayer.textContent = playerlist.player0Name;
 		var cellScore = row.insertCell();
 		cellScore.textContent = playerlist.player0Score;
+		
+		playerCount = 1;
+	}
+	
+
+	if(playerId == 0){
+		// aktiviere Startbutton wenn genug Spieler + Katalog ausgewählt
+		if((playerCount >= 2) && (activeCatalog == "")){
+			var buttonStart = window.document.getElementById("buttonStart");
+			buttonStart.textContent = "Wähle Katalog um Spiel zu starten";
+		}
+		else if((playerCount >= 2) && (activeCatalog != "")){
+			var buttonStart = window.document.getElementById("buttonStart");
+			buttonStart.textContent = "Spiel starten";
+			buttonStart.disabled = false;
+		}
 	}
 	
 }
@@ -371,20 +408,27 @@ function updatePlayerList(playerName){
 */
 
 
+function clearLoginDiv(){
+    // clean up main div
+    document.getElementById("main").innerHTML = "";
+}
 
-/*
+
 function clickedStart(event){
 
     // clean up main div
     document.getElementById("main").innerHTML = "";
 
     // update main div with question
-    document.getElementById("main").innerHTML = "<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>";
+    // document.getElementById("main").innerHTML = "<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>";
 
+    sendWSMessage(7);
+    
     event.stopPropagation();
 }
 
 
+/*
 function clickedPlayer(event) {
 
     var firstPlayer = document.getElementById("tablePlayerlistBody").firstChild;

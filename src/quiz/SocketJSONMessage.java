@@ -42,6 +42,9 @@ public class SocketJSONMessage {
 				this.messageData[0] = jObject.getString("catalogName");		
 				break;
 			case 7: // StartGame
+				System.out.println("StartGame: " + jObject.getString("catalogName"));
+				this.messageType = jObject.getInt("messageType");
+				this.messageData[0] = jObject.getString("catalogName");				
 				break;
 			case 10: // QuestionAnswered
 				break;
@@ -78,8 +81,10 @@ public class SocketJSONMessage {
 				System.out.println("CatalogChange 2: " + this.messageData[0]);
 				jObject.put("catalogName", this.messageData[0]);
 				break;
-			case 7: // StartGame
-				break;
+/*			case 7: // StartGame
+				System.out.println("StartGame " + this.messageData[0]);
+				jObject.put("catalogName", this.messageData[0]);				
+				break; */
 			case 9: // Quesetion
 				break;
 			case 11: // QuestionResult
@@ -123,6 +128,9 @@ public class SocketJSONMessage {
 
 		    		playerCounter++;
 		    	}
+				break;
+			case 7: // StartGame
+				// nothing to do
 				break;
 			default:
 				break;				

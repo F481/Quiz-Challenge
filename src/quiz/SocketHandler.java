@@ -128,6 +128,27 @@ public class SocketHandler {
 					}
 				}				
 				break;
+			case 7: // StartGame
+				System.out.println("typ 7 empfangen - starte Spiel");
+				/*
+				quiz.startGame(player, quizError);
+				if (quizError.isSet()) {
+					System.out.println(quizError.getDescription());
+					sendError(session, 1, "Spiel konnte nicht gestartet werden: "+ quizError.getDescription());
+					return;
+				}
+				*/
+				// send start game to all players - Broadcast
+				System.out.println("Send start game broadcast");
+				for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+					Session s = ConnectionManager.getSession(i);
+					try {
+						s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());
+					} catch (IOException | JSONException e) {
+						// ignore
+					}
+				}				
+				break;
 			default:
 				System.out.println("default konnte nicht auswerten");
 				break;
