@@ -7,9 +7,10 @@ import org.json.JSONObject;
 
 public class SocketJSONMessage {
 
-	private int messageType;
-	private String JSONString;
-	private Object[] messageData = new Object[6];
+	private String JSONString; // enthaelt String, der aus JSON-Objekt mit der Methode toString() erzeugt wird
+	
+	private int messageType; // Typ der Nachricht, 1 = LoginRequest etc.
+	private Object[] messageData = new Object[6]; // Strings, z.B Spielername, Fragen, Antworten, ...
 	
 	/**
 	 * Konstruktor baut JSON-Objekt aus Empfangsdaten (JSONString)
@@ -24,7 +25,7 @@ public class SocketJSONMessage {
 		
 		// lege neues JSON Objekt an
 		JSONObject jObject = new JSONObject(this.JSONString);
-		
+
 		// lese messageType aus
 		switch(jObject.getInt("messageType")){
 			case 1: // LoginRequest

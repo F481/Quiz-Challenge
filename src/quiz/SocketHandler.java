@@ -84,14 +84,19 @@ public class SocketHandler {
 		switch(type){
 			case 1: // LoginRequest
 				System.out.println("typ 1 empfangen - erstelle  neuen spieler");
+				// erzeuge Spieler mit Namen aus Paket
 				this.player = Quiz.getInstance().createPlayer(((String) sMessage.getMessage()[0]), quizError);
 
+				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
 					System.out.println("Login Error: Code: " + Integer.toString(quizError.getStatus()));
 					sendError(session, 1, "Spieler konnte nicht erstellt werden: "+ quizError.getDescription());
 				}
+				
+				// anlegen des Spielers war erfolgreich
 				try {
 					System.out.println("sende LoginResponseOK");
+					// sende LoginResponseOK mit Spieler-ID
 					session.getBasicRemote().sendText(new SocketJSONMessage(2, new Object[] { player.getId() }).getJsonString());
 				} catch (JSONException e2) {
 					// TODO Auto-generated catch block
@@ -134,8 +139,7 @@ public class SocketHandler {
 		ConnectionManager.SessionRemove(session);
 		System.out.println("Close Client.");
 		
-		// Alle Session-IDs aus Connection-Manager auslesen in einem JSON-String
-		// speichern
+		// lese alle SessionIDs aus ConnectionManager aus und speichere in JSON-String-Array
 		String output = "[";
 		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
 			Session s = ConnectionManager.getSession(i);

@@ -1,16 +1,20 @@
-// var playerCounter = 0;
-
+// Websocket
 var socket;
 var readyToSend = false;
 
+// AJAX
+var request
+
+// Player
 var playerId = -1;
 
+// Kataloge
+var activeCatalog = "";
 
 
 function init(){
 
     // lauftext();
-    // initCataloglist();
 
     // open websocket
     var url = 'ws:localhost:8080/Quiz-Challenge-Server/SocketHandler';
@@ -50,7 +54,7 @@ function receiveWSMessage(message){
 	switch (parsedJSONMessage.messageType){
 		case 2: // LoginResponseOK
 			console.log("Player ID: " + parsedJSONMessage.playerID);
-            		playerId = parsedJSONMessage.playerID;
+            playerId = parsedJSONMessage.playerID;
 			processSuccessfulLogin();
 			break;
 		case 5: // CatalogChange
@@ -81,10 +85,10 @@ function sendWSMessage(type){
 		
 		switch(type){
 			case 1: // LoginRequest
-		  		// get value of input field
+			    // get value of input field
 				var inputName = window.document.getElementById("inputName");
 				var playerName = inputName.value;
-		       		 // LoginRequest with type + playername
+		        // LoginRequest with type + playername
 				jsonData = JSON.stringify({
 					messageType : messageType,
 					loginName : playerName
@@ -118,22 +122,66 @@ function processSuccessfulLogin(){
     var buttonStart = window.document.getElementById("buttonStart");
 	if(playerId == 0){
 		// Spielleiter
-		buttonStart.textContent = "Warte auf weitere Spieler";
+		buttonStart.textContent = "Warte auf weitere Spieler ...";
 	} else {
 		// kein Spielleiter
-		buttonStart.textContent = "Warte auf Spielstart";
+		buttonStart.textContent = "Warte auf Spielstart ...";
+	}
+	
+	// request catalogs
+	requestCatalogs();
+}
+
+
+function requestCatalogs() {
+
+	// create AJAX-Request-Object
+	request = new XMLHttpRequest();
+	
+	// Kommunikation mit Server initialisieren
+	request.open("GET", "AjaxCatalogServerlet", true);
+	
+	// Eventhandler registrieren, um auf asynchrone Antwort vom Server reagieren zu können
+	request.onreadystatechange = ajaxServerCatalogResponse;
+	
+	// Anfrage senden
+	request.send(null);
+	
+}
+
+function ajaxServerCatalogResponse(){
+
+	// States (0 - uninitialized, 1 - open, 2 - sent, 3 - receiving) werden nicht verarbeitet
+	
+	// State 4 - die Antwort des Servers liegt vollständig vor
+	if(request.readyState == 4){
+		var answer = request.responseXML.getElementsByTagName("catalogName");
+		for(var i=0;i < answer.length; i++){
+			// erzeuge div mit Text, weise CSS-Klasse hinzu
+			var catalogDiv = document.createElement("div");
+			catalogDiv.className = "catalogList";
+			catalogDiv.textContent = answer[i].firstChild.nodeValue;
+			// füge div zum DOM-Baum hinzu + registriere EventListener
+			document.getElementById("catalogs").appendChild(catalogDiv);
+			catalogDiv.addEventListener("click", clickedCatalog, false);
+		}
 	}
 }
 
-
-function initCataloglist() {
-    // get catalogs and add event listener
-    var catalogArray = document.getElementsByClassName("catalogList");
+function clickedCatalog(event){
+    // get all catalogs and set background to default
+    var catalogArray = window.document.getElementsByClassName("catalogList");
     for(var i = 0; i < catalogArray.length; i++) {
-        catalogArray[i].addEventListener("click", clickedCatalog, true);
+        catalogArray[i].style.backgroundColor="#f3f3f3";
     }
-}
+    // highlight clicked catalog
+    event.target.style.backgroundColor="#ffa500";
 
+    // set clicked catalog as active catalog
+    activeCatalog = event.target.textContent;
+    
+    event.stopPropagation();
+}
 
 /*
 var begin = 0;
@@ -159,7 +207,7 @@ function clickedLogin(event){
 
 	var inputName = window.document.getElementById("inputName");
 	var playerName = inputName.value;
-    	// verify user  name
+    // verify user  name
 	if (playerName === ""){
 		alert("Es wurde kein Spielername eingegeben!");
 	} else {
@@ -214,17 +262,7 @@ function updatePlayerList(playerName){
 }
 */
 
-function clickedCatalog(event){
-    // get all catalogs and set background to default
-    var catalogArray = window.document.getElementsByClassName("catalogList");
-    for(var i = 0; i < catalogArray.length; i++) {
-        catalogArray[i].style.backgroundColor="#f3f3f3";
-    }
-    // highlight clicked catalog
-    event.target.style.backgroundColor="#ffa500";
 
-    event.stopPropagation();
-}
 
 /*
 function clickedStart(event){
