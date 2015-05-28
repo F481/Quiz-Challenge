@@ -34,6 +34,9 @@ public class SocketJSONMessage {
 				this.messageData[0] = jObject.getString("loginName");
 				break;
 			case 5: // CatalogChange
+				System.out.println("CatalogChange 1: " + jObject.getString("catalogName"));
+				this.messageType = jObject.getInt("messageType");
+				this.messageData[0] = jObject.getString("catalogName");		
 				break;
 			case 7: // StartGame
 				break;
@@ -68,7 +71,9 @@ public class SocketJSONMessage {
 				System.out.println("LoginResponseOK");
 				jObject.put("playerID", this.messageData[0]);
 				break;
-			case 5: //
+			case 5: // CatalogChange
+				System.out.println("CatalogChange 2: " + this.messageData[0]);
+				jObject.put("catalogName", this.messageData[0]);
 				break;
 			case 7: //
 				break;

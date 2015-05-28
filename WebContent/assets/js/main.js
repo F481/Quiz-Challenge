@@ -58,6 +58,9 @@ function receiveWSMessage(message){
 			processSuccessfulLogin();
 			break;
 		case 5: // CatalogChange
+			console.log("Catalog changed: " + parsedJSONMessage.catalogName)
+			activeCatalog = parsedJSONMessage.catalogName;
+			highlichtChoosenCatalog(activeCatalog);
 			break;
 		case 7: // StartGame
 			break;
@@ -93,9 +96,16 @@ function sendWSMessage(type){
 					messageType : messageType,
 					loginName : playerName
 				});
-
+				console.log("send MessageType 1");
 				break;
 			case 5: // CatalogChange
+				var catalogName = activeCatalog;
+		        // CatalogChange with type + catalogname
+				jsonData = JSON.stringify({
+					messageType : messageType,
+					catalogName : catalogName
+				});
+				console.log("send MessageType 5");
 				break;
 			case 7: // StartGame
 				break;
@@ -169,19 +179,39 @@ function ajaxServerCatalogResponse(){
 }
 
 function clickedCatalog(event){
-    // get all catalogs and set background to default
-    var catalogArray = window.document.getElementsByClassName("catalogList");
-    for(var i = 0; i < catalogArray.length; i++) {
-        catalogArray[i].style.backgroundColor="#f3f3f3";
-    }
-    // highlight clicked catalog
-    event.target.style.backgroundColor="#ffa500";
+    if(playerId == 0){
+    	// get all catalogs and set background to default
+        var catalogArray = window.document.getElementsByClassName("catalogList");
+        for(var i = 0; i < catalogArray.length; i++) {
+            catalogArray[i].style.backgroundColor="#f3f3f3";
+        }
+        // highlight clicked catalog
+        event.target.style.backgroundColor="#ffa500";
 
-    // set clicked catalog as active catalog
-    activeCatalog = event.target.textContent;
+        // set clicked catalog as active catalog
+        activeCatalog = event.target.textContent;
+        
+        // send catalog change
+        sendWSMessage(5);
+    }
     
     event.stopPropagation();
 }
+
+function highlichtChoosenCatalog(catalogName){
+	// get all catalogs and set background to default
+    var catalogArray = window.document.getElementsByClassName("catalogList");
+    for(var i = 0; i < catalogArray.length; i++) {
+    	if(catalogArray[i].textContent == catalogName){
+    		// hebe den aktiven Katalog vor
+    		catalogArray[i].style.backgroundColor="#ffa500";
+    	} else {
+    		// setze Farbe bei allen anderen Katalogen zurück
+    		catalogArray[i].style.backgroundColor="#f3f3f3";
+    	}
+    }
+}
+
 
 /*
 var begin = 0;

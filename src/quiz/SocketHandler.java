@@ -74,7 +74,7 @@ public class SocketHandler {
 		} catch (JSONException e){
 			e.printStackTrace();
 			// send error nachticht an client
-			// sendError(session, 0, "Fehlerhafte Nachricht erhalten!");
+			sendError(session, 0, "Fehlerhafte Nachricht erhalten!");
 		}
 		
 		System.out.println("Nachricht auswerten: " + msg);
@@ -102,9 +102,29 @@ public class SocketHandler {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 					sendError(session, 1, "LoginResponseOK konnte nicht erstellt werden!");
-				}				
+				}
 				break;
-			case 5:
+			case 5: // CatalogChange
+				System.out.println("typ 5 empfangen - setzte aktiven Katalog");				
+				// quiz.changeCatalog(player, sMessage.getMessage()[0] + ".xml", quizError);
+				quiz.changeCatalog(player, sMessage.getMessage()[0].toString(), quizError);
+				// prüfe ob setzten des Katalogs erfolgreich
+				if (quizError.isSet()) {
+					System.out.println(quizError.getDescription());
+					sendError(session, 1, "Katalog konnte nicht ausgewählt werden: "+quizError.getDescription());
+					return;
+				}
+				// sende CatalogChange an alle Clients - Broadcast
+				for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+					System.out.println("sende typ 5 an spieler: " + i);
+					Session s = ConnectionManager.getSession(i);
+					try {
+						s.getBasicRemote().sendText(new SocketJSONMessage(5, sMessage.getMessage()).getJsonString());
+						
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}				
 				break;
 			default:
 				System.out.println("default konnte nicht auswerten");
