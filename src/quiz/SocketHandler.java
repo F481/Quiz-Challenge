@@ -15,6 +15,7 @@ import org.json.JSONException;
 
 import error.QuizError;
 import application.Player;
+import application.Question;
 import application.Quiz;
 
 
@@ -22,6 +23,8 @@ import application.Quiz;
 public class SocketHandler {
 	
 	private Player player;
+	
+	private Timer curTimeOut;
 	
 	@OnOpen
 	// Ein Client meldet sich an und eröffnet eine neue WebSocket-Verbindung
@@ -31,6 +34,7 @@ public class SocketHandler {
 		
 		System.out.println("Öffne Socket mit SessionID: " + session.getId());
 		
+		/*
 		try {
 			if(session.isOpen()){
 				// lese alle SessionIDs aus ConnectionManager aus und speichere in String
@@ -58,6 +62,7 @@ public class SocketHandler {
 				// ignore
 			}
 		}
+		*/
 	}
 	
 	@OnMessage
@@ -130,14 +135,13 @@ public class SocketHandler {
 				break;
 			case 7: // StartGame
 				System.out.println("typ 7 empfangen - starte Spiel");
-				/*
 				quiz.startGame(player, quizError);
 				if (quizError.isSet()) {
+		    		System.out.println("quiz error is set");
 					System.out.println(quizError.getDescription());
 					sendError(session, 1, "Spiel konnte nicht gestartet werden: "+ quizError.getDescription());
 					return;
 				}
-				*/
 				// send start game to all players - Broadcast
 				System.out.println("Send start game broadcast");
 				for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
@@ -147,6 +151,68 @@ public class SocketHandler {
 					} catch (IOException | JSONException e) {
 						// ignore
 					}
+				}				
+				break;
+			case 8: // QuestionRequest
+				System.out.println("typ 8 empfangen - ");
+				curTimeOut = new Timer(player, session);
+				Question question = quiz.requestQuestion(player, curTimeOut, quizError);
+				if (quizError.isSet()) {
+					System.out.println("Error: "+quizError.getDescription());
+					sendError(session, 1, "Konnte Question nicht laden: "+quizError.getDescription());
+
+				} else if (question == null && !quizError.isSet()) {
+					System.out.println("Question ist null");
+					if(quiz.setDone(player)){
+						System.out.println("Spiel ende");
+						for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+							Session s = ConnectionManager.getSession(i);
+							try {
+								s.getBasicRemote().sendText(
+										new SocketJSONMessage(12, new Object[]{true})
+												.getJsonString());
+							} catch (IOException | JSONException e) {
+								// ignore
+							}
+						}
+						for(Player pTemp : quiz.getPlayerList()){
+							quiz.removePlayer(pTemp, quizError);
+							if(quizError.isSet()){
+								System.out.println(quizError.getDescription());
+							}	
+						}
+					}else{
+						System.out.println("Spieler ende");
+						try {
+							session.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{false}).getJsonString());
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							sendError(session, 0, "Erstellen der GameOver Nachricht fehlgeschlagen!");
+						}
+					}
+				}else{
+				String[] answers = new String[4];
+				int i = 0;
+				try{
+				for (String s : question.getAnswerList()) {
+						answers[i] = s;
+					i++;
+				}
+				}catch (NullPointerException e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				}
+				try {
+					session.getBasicRemote().sendText(
+							new SocketJSONMessage(9, new Object[] { question.getQuestion(),
+									answers[0], answers[1], answers[2], answers[3],
+									(int) (question.getTimeout()/1000) }).getJsonString());
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					sendError(session, 0, "Erstellen der Question Message fehlgeschlagen");
+				}
 				}				
 				break;
 			default:

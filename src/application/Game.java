@@ -66,6 +66,7 @@ public class Game {
      */
     protected synchronized boolean start(QuizError error) {
 
+    	System.out.println("aufrunf game start (game.java 69)");
         // Make sure preconditions are meet
         if (isActive()) {
             error.set(QuizErrorType.GAME_IN_PROGRESS);
@@ -96,7 +97,8 @@ public class Game {
      * @return <code>true</code> if game is active; else <code>false</code>
      */
     public synchronized boolean isActive() {
-        return this.active;
+    	System.out.println("aufruf 'is active (game.java 99");
+    	return this.active;
     }
 
     /**

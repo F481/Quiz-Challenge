@@ -15,6 +15,17 @@ var curPlayerList;
 // Kataloge
 var activeCatalog = "";
 
+// Question
+var curQuestion = "";
+var curAnswer1 = "";
+var curAnswer2 = "";
+var curAnswer3 = "";
+var curAnswer4 = "";
+var curTimeOut = 0;
+
+// player answer
+var curSelection = -1;
+
 
 function init(){
 
@@ -72,12 +83,21 @@ function receiveWSMessage(message){
 			updatePlayerList(playerlist);
 			break;
 		case 7: // StartGame
+			console.log("Startgame: ");
 			// clear login stuff
 			clearLoginDiv();
 			// request first question
 			sendWSMessage(8);
 			break;
 		case 9: // Question
+			console.log("Question: ");
+			curQuestion = parsedJSONMessage.question;
+			curAnswer1 = parsedJSONMessage.answer1;
+			curAnswer2 = parsedJSONMessage.answer2;
+			curAnswer3 = parsedJSONMessage.answer3;
+			curAnswer4 = parsedJSONMessage.answer4;
+			curTimeOut = parsedJSONMessage.timeOut;
+			showQuestion();			
 			break;
 		case 11: // Question Result
 			break;
@@ -98,6 +118,7 @@ function sendWSMessage(type){
 		
 		var messageType = type.toString();
 		var jsonData;
+		var selection = curSelection;
 		
 		switch(type){
 			case 1: // LoginRequest
@@ -129,8 +150,17 @@ function sendWSMessage(type){
 				});
 				break;
 			case 8: // QuestionRequest
+				// QuestionRequest with type
+				jsonData = JSON.stringify({
+					messageType : messageType
+				});				
 				break;
 			case 10: // QuestionAnswered
+				// QuestionAnswered with type + selected answer		
+				jsonSend = JSON.stringify({
+					messageType : messageType,
+					selection : selection
+				});				
 				break;
 			default: // unknown type
 				console.log("Can't send - unknown message type");
@@ -139,7 +169,7 @@ function sendWSMessage(type){
 		// send message
 		socket.send(jsonData);
 	} 
-	// socket not ready ro send
+	// socket not ready to send
 	else {
 		alert("Verbindung zum Server wurde noch nicht aufgebaut");
 	}
@@ -425,6 +455,23 @@ function clickedStart(event){
     sendWSMessage(7);
     
     event.stopPropagation();
+}
+
+
+function showQuestion(){
+	console.log("frage anziegen");
+	
+	// get main div and show question + answers
+	document.getElementById("main").innerHTML = curQuestion;
+	
+	// curQuestion = parsedJSONMessage.question;
+	/*
+	curAnswer1 = parsedJSONMessage.answer1;
+	curAnswer2 = parsedJSONMessage.answer2;
+	curAnswer3 = parsedJSONMessage.answer3;
+	curAnswer4 = parsedJSONMessage.answer4;
+	curTimeOut = parsedJSONMessage.timeOut;
+	*/
 }
 
 

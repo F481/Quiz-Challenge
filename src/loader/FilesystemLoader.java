@@ -126,8 +126,8 @@ public class FilesystemLoader implements CatalogLoader {
 		// fuege Kataloge aus der ArrayList der Katalogverwaltung hinzu
 		for(Document doc : xmlDocuments){
 			Element fragenkatalog = doc.getRootElement();
-			// catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), new QuestionFileLoader(doc)));
-			catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), null));
+			catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), new QuestionFileLoader(doc)));
+			// catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), null));
 		}
 		
         return catalogs;
@@ -203,13 +203,13 @@ public class FilesystemLoader implements CatalogLoader {
 
     private class QuestionFileLoader implements QuestionLoader {
 
-        private final File catalogFile;
-    	// private final Document catalogDocument;
+        //private final File catalogFile;
+    	private final Document catalogDocument;
     	private final List <Question> questions = new ArrayList<Question>();
 
 
-        public QuestionFileLoader(File file) {
-            catalogFile = file;
+        public QuestionFileLoader(Document file) {
+        	catalogDocument = file;
         }
         /*
         public QuestionFileLoader(Document doc) {
@@ -220,10 +220,15 @@ public class FilesystemLoader implements CatalogLoader {
         public List<Question> getQuestions(Catalog catalog)
             throws LoaderException {
 
+        	System.out.println("GetQuestion start (filesystemlader.java line 223)");
+        	
             if (!questions.isEmpty()) {
                 return questions;
             }
 
+            Element fragenkatalog = catalogDocument.getRootElement();
+            
+            /*
             Scanner scanner;
             try {
                 scanner = new Scanner(catalogFile, "UTF-8");
@@ -261,6 +266,22 @@ public class FilesystemLoader implements CatalogLoader {
                     question.shuffleAnswers();
                     questions.add(question);
             }
+            */
+			for(Element questionElement : fragenkatalog.getChildren()) {
+				Question question = new Question(questionElement.getChildText("frage"));				
+				String timeout = questionElement.getAttributeValue("timeout");
+				if(timeout == null)
+					timeout = "10";
+				question.setTimeout(Long.parseLong(timeout) * 100);
+				for(Element answer : questionElement.getChildren("antwort")) {					
+					if(answer.getAttributeValue("richtig").equals("true"))
+						question.addAnswer(answer.getText());
+					else
+						question.addBogusAnswer(answer.getText());
+				}
+	        	System.out.println("question: (filesystemload.java 282: " + question.getQuestion());
+				questions.add(question);
+			}            
             return questions;
         }
 

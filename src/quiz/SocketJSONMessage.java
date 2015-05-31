@@ -22,7 +22,7 @@ public class SocketJSONMessage {
 	 */
 	public SocketJSONMessage(String JSONString) throws JSONException{
 		
-		System.out.println("buld new socketjsonmessage");
+		System.out.println("buld new socketjsonmessage (socketjsonmessage 25)");
 		
 		this.JSONString = JSONString;
 		
@@ -46,7 +46,13 @@ public class SocketJSONMessage {
 				this.messageType = jObject.getInt("messageType");
 				this.messageData[0] = jObject.getString("catalogName");				
 				break;
+			case 8: // QuestionRequest
+				System.out.println("QuestionRequest");
+				this.messageType = jObject.getInt("messageType");
+				break;
 			case 10: // QuestionAnswered
+				System.out.println("QuestionAnswered: ");
+				this.messageData[0] = jObject.getLong("selection");
 				break;
 			default:
 				break;
@@ -81,20 +87,31 @@ public class SocketJSONMessage {
 				System.out.println("CatalogChange 2: " + this.messageData[0]);
 				jObject.put("catalogName", this.messageData[0]);
 				break;
-/*			case 7: // StartGame
-				System.out.println("StartGame " + this.messageData[0]);
-				jObject.put("catalogName", this.messageData[0]);				
-				break; */
 			case 9: // Quesetion
+				System.out.println("Question");
+				jObject.put("question", this.messageData[0]);
+				jObject.put("answer1", this.messageData[1]);
+				jObject.put("answer2", this.messageData[2]);
+				jObject.put("answer3", this.messageData[3]);
+				jObject.put("answer4", this.messageData[4]);
+				jObject.put("timeOut", this.messageData[5]);				
 				break;
 			case 11: // QuestionResult
+				System.out.println("QuestionResult");
+				jObject.put("timedOut", this.messageData[0]);
+				jObject.put("correct", this.messageData[1]);				
 				break;
 			case 12: // GameOver
+				System.out.println("GameOver");
+				jObject.put("isAllOver", this.messageData[0]);				
 				break;
 			case 255: // Error
+				System.out.println("Error");				
+				jObject.put("fatal", this.messageData[0]);
+				jObject.put("errorMessage", this.messageData[1]);				
 				break;
 			default:
-				break;				
+				break;
 		}
 		
 		// konvertiere JSON-Obejt zu String
