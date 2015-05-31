@@ -118,7 +118,7 @@ public class SocketHandler {
 				// prüfe ob setzten des Katalogs erfolgreich
 				if (quizError.isSet()) {
 					System.out.println(quizError.getDescription());
-					sendError(session, 1, "Katalog konnte nicht ausgewählt werden: "+quizError.getDescription());
+					sendError(session, 1, "Katalog konnte nicht ausgewählt werden: " + quizError.getDescription());
 					return;
 				}
 				// sende CatalogChange an alle Clients - Broadcast
@@ -158,10 +158,10 @@ public class SocketHandler {
 				curTimeOut = new Timer(player, session);
 				Question question = quiz.requestQuestion(player, curTimeOut, quizError);
 				if (quizError.isSet()) {
-					System.out.println("Error: "+quizError.getDescription());
-					sendError(session, 1, "Konnte Question nicht laden: "+quizError.getDescription());
-
+					System.out.println("Error: " + quizError.getDescription());
+					sendError(session, 1, "Konnte Question nicht laden: " + quizError.getDescription());
 				} else if (question == null && !quizError.isSet()) {
+					// keine weitere Frage - Spielende für diesen Spieler
 					System.out.println("Question ist null");
 					if(quiz.setDone(player)){
 						System.out.println("Spiel ende");
@@ -181,7 +181,7 @@ public class SocketHandler {
 								System.out.println(quizError.getDescription());
 							}	
 						}
-					}else{
+					} else {
 						System.out.println("Spieler ende");
 						try {
 							session.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{false}).getJsonString());
@@ -191,30 +191,48 @@ public class SocketHandler {
 							sendError(session, 0, "Erstellen der GameOver Nachricht fehlgeschlagen!");
 						}
 					}
-				}else{
-				String[] answers = new String[4];
-				int i = 0;
-				try{
-				for (String s : question.getAnswerList()) {
-						answers[i] = s;
-					i++;
-				}
-				}catch (NullPointerException e) {
-					// TODO: handle exception
-					e.printStackTrace();
+				} else { // baue Frage + Antworten
+					String[] answers = new String[4];
+					int i = 0;
+					try {
+						for (String s : question.getAnswerList()) {
+							answers[i] = s;
+							i++;
+						}
+					} catch (NullPointerException e) {
+						// TODO: handle exception
+						e.printStackTrace();
+					}
+					try {
+						session.getBasicRemote().sendText(
+								new SocketJSONMessage(9, new Object[] { question.getQuestion(),
+										answers[0], answers[1], answers[2], answers[3],
+										(int) (question.getTimeout()/1000) }).getJsonString());
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						sendError(session, 0, "Erstellen der Question Message fehlgeschlagen");
+					}
+				}				
+				break;
+			case 10:
+				long rightAnswer = quiz.answerQuestion(player,
+						(long) sMessage.getMessage()[0], quizError);
+				if (quizError.isSet()) {
+					System.out.println(quizError.getDescription());
+					sendError(session, 1, "AnswerQuestion fehlgeschlagen: "+quizError.getDescription());
+					return;
 				}
 				try {
 					session.getBasicRemote().sendText(
-							new SocketJSONMessage(9, new Object[] { question.getQuestion(),
-									answers[0], answers[1], answers[2], answers[3],
-									(int) (question.getTimeout()/1000) }).getJsonString());
+							new SocketJSONMessage(11, new Object[] { false, rightAnswer })
+									.getJsonString());
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					sendError(session, 0, "Erstellen der Question Message fehlgeschlagen");
+					sendError(session, 0, "QuestionResult senden fehlgeschlagen!");
 				}
-				}				
-				break;
+				break;				
 			default:
 				System.out.println("default konnte nicht auswerten");
 				break;
@@ -226,8 +244,7 @@ public class SocketHandler {
 
 	public void sendPlayerList(){
 		
-		// sende aktualisierte Spielerliste an alle Spieler
-		
+		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
 		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
 			System.out.println("sende typ 6 an spieler: " + i);
 			Session s = ConnectionManager.getSession(i);

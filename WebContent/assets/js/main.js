@@ -5,6 +5,9 @@ var readyToSend = false;
 // AJAX
 var request;
 
+//Game
+var gameRunning = false;
+
 // Player
 playerId = -1;
 var playerCount = 0;
@@ -12,7 +15,7 @@ var playerCount = 0;
 // Playerliste
 var curPlayerList;
 
-// Kataloge
+// aktiver / ausgewählter Katalog
 var activeCatalog = "";
 
 // Question
@@ -22,8 +25,9 @@ var curAnswer2 = "";
 var curAnswer3 = "";
 var curAnswer4 = "";
 var curTimeOut = 0;
+var isQuestionActive = false;
 
-// player answer
+// Antwortauswahl
 var curSelection = -1;
 
 
@@ -80,12 +84,15 @@ function receiveWSMessage(message){
 		case 6: // StartGame
 			console.log("Playerlist: ");
 			var playerlist = parsedJSONMessage;
+			curPlayerList = playerlist;
 			updatePlayerList(playerlist);
 			break;
 		case 7: // StartGame
 			console.log("Startgame: ");
+			gameRunning = true;
 			// clear login stuff
 			clearLoginDiv();
+			showGameDiv();
 			// request first question
 			sendWSMessage(8);
 			break;
@@ -97,11 +104,31 @@ function receiveWSMessage(message){
 			curAnswer3 = parsedJSONMessage.answer3;
 			curAnswer4 = parsedJSONMessage.answer4;
 			curTimeOut = parsedJSONMessage.timeOut;
-			showQuestion();			
+			showQuestion();
+			isQuestionActive = true;
 			break;
 		case 11: // Question Result
+			console.log("Correct: " + parsedJSONMessage.correct);
+			
+			// markiere Spielerauswahl rot
+			document.getElementById(curSelection).style.borderColor = "red";
+			document.getElementById(curSelection).style.backgroundColor = "#FF0800";
+			
+			// markiere korrekte Antworten grüen
+			document.getElementById(parsedJSONMessage.correct).style.borderColor = "green";
+			document.getElementById(parsedJSONMessage.correct).style.backgroundColor = "#8DB600";
+
+			// -> false -> es können keine Antworten mehr geklickt werden
+			isQuestionActive = false;
+			
+			window.setTimeout(function() {
+				// frage nach zwei Sekunden neue Frage an
+				sendWSMessage(8);
+			}, 2000)			
 			break;
 		case 12: // GameOver
+			console.log("GameOver - Spiel ist zu ende");
+			GameOver(parsedJSONMessage);			
 			break;
 		case 255: // Error
 			break;
@@ -126,24 +153,25 @@ function sendWSMessage(type){
 				var inputName = window.document.getElementById("inputName");
 				var playerName = inputName.value;
 		        // LoginRequest with type + playername
+				console.log("send MessageType 1");
 				jsonData = JSON.stringify({
 					messageType : messageType,
 					loginName : playerName
 				});
-				console.log("send MessageType 1");
 				break;
 			case 5: // CatalogChange
 				var catalogName = activeCatalog;
 		        // CatalogChange with type + catalogname
+				console.log("send MessageType 5");
 				jsonData = JSON.stringify({
 					messageType : messageType,
 					catalogName : catalogName
 				});
-				console.log("send MessageType 5");
 				break;
 			case 7: // StartGame
 				var catalogName = activeCatalog;
 		        // StartGame with type + catalogname
+				console.log("send MessageType 7");
 				jsonData = JSON.stringify({
 					messageType : messageType,
 					catalogName : catalogName
@@ -151,13 +179,15 @@ function sendWSMessage(type){
 				break;
 			case 8: // QuestionRequest
 				// QuestionRequest with type
+				console.log("send MessageType 8");
 				jsonData = JSON.stringify({
 					messageType : messageType
 				});				
 				break;
 			case 10: // QuestionAnswered
 				// QuestionAnswered with type + selected answer		
-				jsonSend = JSON.stringify({
+				console.log("send MessageType 10");				
+				jsonData = JSON.stringify({
 					messageType : messageType,
 					selection : selection
 				});				
@@ -178,6 +208,11 @@ function sendWSMessage(type){
 
 function processSuccessfulLogin(){
 	
+	// remove login button + name input field
+	var mainDiv = document.getElementById("main");
+	mainDiv.removeChild(document.getElementById("loginForm"));
+
+	// change text of start button
     var buttonStart = window.document.getElementById("buttonStart");
 	if(playerId == 0){
 		// Spielleiter
@@ -193,20 +228,24 @@ function processSuccessfulLogin(){
 
 
 function requestCatalogs() {
-
-	// create AJAX-Request-Object
-	request = new XMLHttpRequest();
-	
-	// Kommunikation mit Server initialisieren
-	request.open("GET", "AjaxCatalogServerlet", true);
-	
-	// Eventhandler registrieren, um auf asynchrone Antwort vom Server reagieren zu können
-	request.onreadystatechange = ajaxServerCatalogResponse;
-	
-	// Anfrage senden
-	request.send(null);
-	
+	// prüefe ob Browser AJAX unterstützt
+	if (window.XMLHttpRequest){ // code for IE7+, Firefox, Chrome, Opera, Safari
+		// create AJAX-Request-Object
+		request = new XMLHttpRequest();
+		
+		// Kommunikation mit Server initialisieren
+		request.open("GET", "AjaxCatalogServerlet", true);
+		
+		// Eventhandler registrieren, um auf asynchrone Antwort vom Server reagieren zu können
+		request.onreadystatechange = ajaxServerCatalogResponse;
+		
+		// Anfrage senden
+		request.send(null);		
+	} else { // code for IE6, IE5, non AJAX compatible browsers
+		alert("Kann Katalog nicht auswählen - Browser unterstützt kein AJAX. Für das Spiel ist IE7+, Firefox, Chrome, Opera, Safari oder ein anderer AJAX-fähriger Browser notwendig!");
+	}	
 }
+
 
 function ajaxServerCatalogResponse(){
 
@@ -227,33 +266,27 @@ function ajaxServerCatalogResponse(){
 	}
 }
 
-function clickedCatalog(event){
-	if(playerId == 0){
-    	// get all catalogs and set background to default
-        var catalogArray = window.document.getElementsByClassName("catalogList");
-        for(var i = 0; i < catalogArray.length; i++) {
-            catalogArray[i].style.backgroundColor="#f3f3f3";
-        }
-        // highlight clicked catalog
-        event.target.style.backgroundColor="#ffa500";
 
-        // set clicked catalog as active catalog
-        activeCatalog = event.target.textContent;
+function clickedCatalog(event){
+	if((playerId == 0) && (gameRunning == false)){
+        // hebe den ausgewählten Katalog hervor
+        activeCatalog = event.target.textContent;        
+        highlichtChoosenCatalog(activeCatalog);
         
         // send catalog change
         sendWSMessage(5);
         
-        
+        // passe start button an falls genügend Spieler angemeldet sind (Text ändern, Start button aktivieren)
 		if(playerCount >= 2){
 			var buttonStart = window.document.getElementById("buttonStart");
 			buttonStart.textContent = "Spiel starten";
 			buttonStart.disabled = false;
 			console.log("spielerleiter highlichtChoosenCatalog end");
 		}
-    }
-	    
+    }	    
     event.stopPropagation();
 }
+
 
 function highlichtChoosenCatalog(catalogName){
 	
@@ -382,7 +415,7 @@ function clickedLogin(event){
 
 	var inputName = window.document.getElementById("inputName");
 	var playerName = inputName.value;
-    // verify user  name
+    // verify user name
 	if (playerName === ""){
 		alert("Es wurde kein Spielername eingegeben!");
 	} else {
@@ -447,11 +480,9 @@ function clearLoginDiv(){
 function clickedStart(event){
 
     // clean up main div
-    document.getElementById("main").innerHTML = "";
+	clearLoginDiv();
 
-    // update main div with question
-    // document.getElementById("main").innerHTML = "<h2>Frage: Bisch du ein netter Kobold?</h2><p>Ja<br>Nein<br>Vll<br>Selber Kobold</p>";
-
+    // send GameStart
     sendWSMessage(7);
     
     event.stopPropagation();
@@ -461,17 +492,72 @@ function clickedStart(event){
 function showQuestion(){
 	console.log("frage anziegen");
 	
-	// get main div and show question + answers
-	document.getElementById("main").innerHTML = curQuestion;
 	
-	// curQuestion = parsedJSONMessage.question;
-	/*
-	curAnswer1 = parsedJSONMessage.answer1;
-	curAnswer2 = parsedJSONMessage.answer2;
-	curAnswer3 = parsedJSONMessage.answer3;
-	curAnswer4 = parsedJSONMessage.answer4;
-	curTimeOut = parsedJSONMessage.timeOut;
-	*/
+	document.getElementById("QuestionText").textContent = curQuestion;
+
+	var answerText = [ curAnswer1, curAnswer2, curAnswer3, curAnswer4 ];
+
+	var answers = document.getElementsByClassName("answerDiv");
+	for (var c = 0; c < 4; c++) {
+		answers[c].style.borderColor = "black";
+		answers[c].style.backgroundColor = "white";
+		answers[c].textContent = answerText[c];
+	}
+	document.getElementById("timeOut").textContent = "Time Out: " + curTimeOut
+			+ " Sekunden";
+}
+
+
+function showGameDiv(){
+	
+	var mainDiv = document.getElementById("main");
+	
+	// div (container) für Frage, Antwort, Timer
+	var questDiv = document.createElement("div");
+	
+	// div für Fragen
+	var question = document.createElement("div");
+	question.id = "QuestionText";
+	question.style.fontSize = "16px";
+
+	questDiv.id = "questDiv";
+
+	// Überschrift Fragenkatalog
+	var title = document.createElement("h3");
+	title.id = "GameDivTitle";
+	title.textContent = "Fragekatalog: " + activeCatalog;
+	
+	questDiv.appendChild(title);
+	questDiv.appendChild(question);
+
+	var answers = [];
+
+	for (var i = 0; i < 4; i++) {
+		answers[i] = document.createElement("div");
+		answers[i].className = "answerDiv";
+		answers[i].id = i;
+
+		answers[i].addEventListener("click", function(event) {
+			if (isQuestionActive) {
+				// lese Antwort auswahl aus
+				curSelection = event.target.id;
+				console.log("clicked answer: " + event.target.id);
+				// sende QuestionAnwswered
+				sendWSMessage(10);
+			}
+		}, false);
+		questDiv.appendChild(answers[i]);
+	}
+	
+	// timout
+	var timeOut = document.createElement("p");
+	timeOut.id = "timeOut";
+	
+	// füge Time out dem div hinz
+	questDiv.appendChild(timeOut);
+	
+	// füge Frage, Antworten + Timer dem main div hinz
+	mainDiv.appendChild(questDiv);
 }
 
 
@@ -485,3 +571,25 @@ function clickedPlayer(event) {
 */
 
 
+function GameOver(ranking) {
+	var questDiv = document.getElementById("questDiv");
+	while (questDiv.firstChild) {
+		questDiv.removeChild(questDiv.firstChild);
+	}
+	var title = document.createElement("h3");
+	title.textContent = "Game Over!";
+	questDiv.appendChild(title);
+	if(ranking.isAllOver){
+		for (var i = 0; i < curPlayerList.length; i++) {
+			var p = document.createElement("h2");
+			p.textContent = "Platz "+(i+1)+": "+curPlayerList[i].name+" "+curPlayerList[i].score;
+			questDiv.appendChild(p);
+		}
+	} else {
+		var p = document.createElement("p");
+	p.textContent = "Warte bis alle Spieler fertig sind...";
+	questDiv.appendChild(p);
+	}
+	
+	
+}

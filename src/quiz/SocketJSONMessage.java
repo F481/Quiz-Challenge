@@ -51,7 +51,8 @@ public class SocketJSONMessage {
 				this.messageType = jObject.getInt("messageType");
 				break;
 			case 10: // QuestionAnswered
-				System.out.println("QuestionAnswered: ");
+				System.out.println("QuestionAnswered");
+				this.messageType = jObject.getInt("messageType");				
 				this.messageData[0] = jObject.getLong("selection");
 				break;
 			default:
