@@ -375,7 +375,7 @@ function updatePlayerList(playerlist){
 	}
 	
 
-	if(playerId == 0){
+	if((playerId == 0) && (gameRunning == false)){
 		// aktiviere Startbutton wenn genug Spieler + Katalog ausgewählt
 		if((playerCount >= 2) && (activeCatalog == "")){
 			var buttonStart = window.document.getElementById("buttonStart");
@@ -426,49 +426,6 @@ function clickedLogin(event){
 }
 
 
-/*
-function updatePlayerList(playerName){
-
-    // update player lists
-    if(document.getElementById("listPlayer1").firstElementChild.innerHTML == "Keine Spieler") {
-        // set player properties + add event listener
-        document.getElementById("listPlayer1").firstElementChild.innerHTML = "1";
-        document.getElementById("listPlayer1").children[1].innerHTML = playerName;
-        document.getElementById("listPlayer1").addEventListener("click", clickedPlayer, true);
-        // ad cells to row below
-        document.getElementById("listPlayer2").innerHTML = "<td></td><td></td><td></td>";
-    }
-    else if (document.getElementById("listPlayer2").firstElementChild.innerHTML === "") {
-        document.getElementById("listPlayer2").firstElementChild.innerHTML = "2";
-        document.getElementById("listPlayer2").children[1].innerHTML = playerName;
-        document.getElementById("listPlayer2").addEventListener("click", clickedPlayer, true);
-        document.getElementById("listPlayer3").innerHTML = "<td></td><td></td><td></td>";
-    }
-    else if (document.getElementById("listPlayer3").firstElementChild.innerHTML === "") {
-        document.getElementById("listPlayer3").firstElementChild.innerHTML = "3";
-        document.getElementById("listPlayer3").children[1].innerHTML = playerName;
-        document.getElementById("listPlayer3").addEventListener("click", clickedPlayer, true);
-        document.getElementById("listPlayer4").innerHTML = "<td></td><td></td><td></td>";
-    }
-    else if (document.getElementById("listPlayer4").firstElementChild.innerHTML === "") {
-        document.getElementById("listPlayer4").firstElementChild.innerHTML = "4";
-        document.getElementById("listPlayer4").children[1].innerHTML = playerName;
-        document.getElementById("listPlayer4").addEventListener("click", clickedPlayer, true);
-    }
-
-    playerCounter = playerCounter + 1;
-
-    // disable login button if player limit is reached
-    if (playerCounter >= 4) {
-        document.getElementById('buttonLogin').disabled = true;
-    }
-
-    // enable start button
-    if (playerCounter >= 2) {
-        document.getElementById('buttonStart').disabled = false;
-    }
-}
-*/
 
 
 function clearLoginDiv(){
@@ -571,7 +528,7 @@ function clickedPlayer(event) {
 */
 
 
-function GameOver(ranking) {
+function GameOver(parsedJSONMessage) {
 	var questDiv = document.getElementById("questDiv");
 	while (questDiv.firstChild) {
 		questDiv.removeChild(questDiv.firstChild);
@@ -579,6 +536,19 @@ function GameOver(ranking) {
 	var title = document.createElement("h3");
 	title.textContent = "Game Over!";
 	questDiv.appendChild(title);
+	
+	rank = parsedJSONMessage.rank;
+	if(rank == 1){
+		// Spiel gewonnen
+		alert("Glückwünsch. Sie haben das Spiel gewonnen!");
+	} else {
+		// Spiel nicht gewonnen
+		alert("Glückwünsch. Sie wurden " + rank + ".!");
+	}
+	
+	
+	// zeige Endposition an
+	/*
 	if(ranking.isAllOver){
 		for (var i = 0; i < curPlayerList.length; i++) {
 			var p = document.createElement("h2");
@@ -589,7 +559,8 @@ function GameOver(ranking) {
 		var p = document.createElement("p");
 	p.textContent = "Warte bis alle Spieler fertig sind...";
 	questDiv.appendChild(p);
+
 	}
-	
+	*/	
 	
 }

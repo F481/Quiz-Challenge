@@ -151,10 +151,13 @@ public class SocketHandler {
 					} catch (IOException | JSONException e) {
 						// ignore
 					}
-				}				
+				}
+				// sende Spielerliste an alle Spieler
+				sendPlayerList();
 				break;
 			case 8: // QuestionRequest
 				System.out.println("typ 8 empfangen - ");
+				// starte Timer für Frage
 				curTimeOut = new Timer(player, session);
 				Question question = quiz.requestQuestion(player, curTimeOut, quizError);
 				if (quizError.isSet()) {
@@ -163,26 +166,27 @@ public class SocketHandler {
 				} else if (question == null && !quizError.isSet()) {
 					// keine weitere Frage - Spielende für diesen Spieler
 					System.out.println("Question ist null");
-					if(quiz.setDone(player)){
+					if(quiz.setDone(player)){ // das Spiel ist zu ende (aller Spieler haben alle Fragen beantwortet)
 						System.out.println("Spiel ende");
 						for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
 							Session s = ConnectionManager.getSession(i);
 							try {
-								s.getBasicRemote().sendText(
-										new SocketJSONMessage(12, new Object[]{true})
-												.getJsonString());
+								s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{true}).getJsonString());
+								//s.getBasicRemote().sendText(new SocketJSONMessage(12).getJsonString());
 							} catch (IOException | JSONException e) {
 								// ignore
 							}
 						}
+						// entferne alle Spieler aus dem Spiel
 						for(Player pTemp : quiz.getPlayerList()){
 							quiz.removePlayer(pTemp, quizError);
 							if(quizError.isSet()){
 								System.out.println(quizError.getDescription());
-							}	
+							}
 						}
-					} else {
+					} else { // keine weiteren Fragen für diesen Spieler
 						System.out.println("Spieler ende");
+						/*
 						try {
 							session.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{false}).getJsonString());
 						} catch (JSONException e) {
@@ -190,8 +194,10 @@ public class SocketHandler {
 							e.printStackTrace();
 							sendError(session, 0, "Erstellen der GameOver Nachricht fehlgeschlagen!");
 						}
+						*/
 					}
-				} else { // baue Frage + Antworten
+				} else { // sende Frage + Antworten an Client
+					// baue Antworten-Array
 					String[] answers = new String[4];
 					int i = 0;
 					try {
@@ -204,6 +210,7 @@ public class SocketHandler {
 						e.printStackTrace();
 					}
 					try {
+						// senden (Frage mit Antworten + Timeout an Client)
 						session.getBasicRemote().sendText(
 								new SocketJSONMessage(9, new Object[] { question.getQuestion(),
 										answers[0], answers[1], answers[2], answers[3],
@@ -215,24 +222,25 @@ public class SocketHandler {
 					}
 				}				
 				break;
-			case 10:
-				long rightAnswer = quiz.answerQuestion(player,
-						(long) sMessage.getMessage()[0], quizError);
+			case 10: // QuestionAnswered
+				// werte Spielerantwort aus
+				long rightAnswer = quiz.answerQuestion(player,(long) sMessage.getMessage()[0], quizError);
 				if (quizError.isSet()) {
 					System.out.println(quizError.getDescription());
 					sendError(session, 1, "AnswerQuestion fehlgeschlagen: "+quizError.getDescription());
 					return;
 				}
 				try {
-					session.getBasicRemote().sendText(
-							new SocketJSONMessage(11, new Object[] { false, rightAnswer })
-									.getJsonString());
+					// sende QuestionResult
+					session.getBasicRemote().sendText(new SocketJSONMessage(11, new Object[] { false, rightAnswer }).getJsonString());
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					sendError(session, 0, "QuestionResult senden fehlgeschlagen!");
 				}
-				break;				
+				// sende Spielerliste an alle Spieler
+				sendPlayerList();				
+				break;	
 			default:
 				System.out.println("default konnte nicht auswerten");
 				break;

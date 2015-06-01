@@ -102,10 +102,6 @@ public class SocketJSONMessage {
 				jObject.put("timedOut", this.messageData[0]);
 				jObject.put("correct", this.messageData[1]);				
 				break;
-			case 12: // GameOver
-				System.out.println("GameOver");
-				jObject.put("isAllOver", this.messageData[0]);				
-				break;
 			case 255: // Error
 				System.out.println("Error");				
 				jObject.put("fatal", this.messageData[0]);
@@ -150,6 +146,11 @@ public class SocketJSONMessage {
 			case 7: // StartGame
 				// nothing to do
 				break;
+			case 12: // GameOver
+				System.out.println("GameOver");
+				//jObject.put("isAllOver", this.messageData[0]);
+				jObject.put("rank", "1");
+				break;				
 			default:
 				break;				
 		}
