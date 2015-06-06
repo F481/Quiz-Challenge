@@ -34,35 +34,6 @@ public class SocketHandler {
 		
 		System.out.println("Öffne Socket mit SessionID: " + session.getId());
 		
-		/*
-		try {
-			if(session.isOpen()){
-				// lese alle SessionIDs aus ConnectionManager aus und speichere in String
-				String JSONOutput = "[";
-				for(int i=0;i<ConnectionManager.SessionCount()-1;i++){
-					Session s = ConnectionManager.getSession(i);
-					JSONOutput = JSONOutput + "\"" + s.getId() + "\"" + ",";
-				}
-				JSONOutput = JSONOutput
-						+ "\""
-						+ ConnectionManager.getSession(
-								ConnectionManager.SessionCount() - 1).getId()
-						+ "\"" + "]";
-				// sende String an alle WebSocker-Verbindungen (Broadcast)
-				for(int i=0;i<ConnectionManager.SessionCount();i++){
-					Session s = ConnectionManager.getSession(i);
-					System.out.println(s);
-					s.getBasicRemote().sendText(JSONOutput, true);
-				}				
-			}
-		} catch(IOException e){
-			try {
-				session.close();
-			} catch(IOException ex){
-				// ignore
-			}
-		}
-		*/
 	}
 	
 	@OnMessage
@@ -95,7 +66,7 @@ public class SocketHandler {
 				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
 					System.out.println("Login Error: Code: " + Integer.toString(quizError.getStatus()));
-					sendError(session, 1, "Spieler konnte nicht erstellt werden: "+ quizError.getDescription());
+					sendError(session, 1, "Spieler konnte nicht erstellt werden: " + quizError.getDescription());
 				}
 				
 				// anlegen des Spielers war erfolgreich
@@ -262,8 +233,7 @@ public class SocketHandler {
 				e.printStackTrace();
 			} catch (JSONException e) {
 				e.printStackTrace();
-			}
-			
+			}			
 		}
 	}
 
@@ -281,39 +251,41 @@ public class SocketHandler {
 	// Client meldet sich wieder ab
 	public void close(Session session, CloseReason reason) {
 		
-		if(player != null){
-			QuizError qError = new QuizError();
-			Quiz.getInstance().removePlayer(player, qError);
-			if(qError.isSet()){
-				System.out.println("Remove Player Error: "+qError.getDescription());
-			}
-		}
-		
-		ConnectionManager.SessionRemove(session);
-		System.out.println("Close Client.");
-		
-		// lese alle SessionIDs aus ConnectionManager aus und speichere in JSON-String-Array
-		String output = "[";
-		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-			Session s = ConnectionManager.getSession(i);
-			output = output + "\"" + s.getId() + "\"" + ",";
-		}
-		output = output
-				+ "\""
-				+ ConnectionManager.getSession(
-						ConnectionManager.SessionCount() - 1).getId() + "\""
-				+ "]";
-		
-		// Broadcasting : JSON-String an alle Web-Socket-Verbindungen senden
-		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-			Session s = ConnectionManager.getSession(i);
-			try {
-				s.getBasicRemote().sendText(output, true);
-			} catch (IOException e) {
-				// ignore
+		if(player != null){			
+			if(player.getId() == 0){ // Spieler war Spielleiter
+				System.out.println("remove player (player was gamemaster!)");
+				QuizError qError = new QuizError();
+				Quiz.getInstance().removePlayer(player, qError);
+				if(qError.isSet()){
+					System.out.println("Remove Player Error: "+qError.getDescription());
+				}
+				
+				// entferne Session
+				ConnectionManager.SessionRemove(session);
+				System.out.println("close session");
+				
+				// sende Spielende an alle Spieler - Broadcast
+				sendErrorToAll(1, "Spielleiter hat das Spiel verlassen!");	
+				
+			} else { // Spieler war kein Spielleiter
+				System.out.println("remove player (not gamemaster)");
+				QuizError qError = new QuizError();
+				Quiz.getInstance().removePlayer(player, qError);
+				if(qError.isSet()){
+					System.out.println("Remove Player Error: "+qError.getDescription());
+					// zu wenige Spieler -> beende Spiel
+					// sende Spielende an alle Spieler - Broadcast
+					sendErrorToAll(1, "Zu wenige Spieler!");	
+				}
+				
+				// entferne Session
+				ConnectionManager.SessionRemove(session);
+				System.out.println("close session");				
+
+				// es sind noch genug Spieler ( >= 2) vorhanden, sende aktualisierte Spielerliste an alle verbleibenden Spieler
+				sendPlayerList();
 			}
 		}		
-		
 	}
 	
 
@@ -333,5 +305,19 @@ public class SocketHandler {
 		}
 	}
 	
+	
+	/**
+	 * Funktion um Fehlernachricht an alle Clients zu senden
+	 * @param fatal ist fatal 1, wird das Spiel beendet
+	 * @param message Fehlernachricht, die an den Client versendet wird
+	 */
+	public static void sendErrorToAll(int fatal, String message){
+		// sende Nachricht an alle Sessions (Spieler - Broadcast)
+		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+			System.out.println("sende typ 6 an spieler: " + i);
+			Session s = ConnectionManager.getSession(i);
+			sendError(s, 1, message);		
+		}
+	}
 	
 }

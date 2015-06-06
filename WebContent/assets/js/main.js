@@ -131,6 +131,14 @@ function receiveWSMessage(message){
 			GameOver(parsedJSONMessage);			
 			break;
 		case 255: // Error
+			console.log("Error");			
+			if(parsedJSONMessage.fatal == 1){ // Spiel beenden
+				alert("Es ist ein fataler Fehler aufgetreten: " + parsedJSONMessage.errorMessage + " Das Spiel wird beendet!");
+				// reload page to start new game?
+				// startNewGame(); --> function is not implemented yet
+			} else { // Fehler ist nicht fatal, Spiel wird nicht beendet
+				console.log("Warning: " + parsedJSONMessage.errorMessage);
+			}
 			break;
 		default:
 			console.log("Received unknown message type");
@@ -546,21 +554,6 @@ function GameOver(parsedJSONMessage) {
 		alert("Glückwünsch. Sie wurden " + rank + ".!");
 	}
 	
-	
-	// zeige Endposition an
-	/*
-	if(ranking.isAllOver){
-		for (var i = 0; i < curPlayerList.length; i++) {
-			var p = document.createElement("h2");
-			p.textContent = "Platz "+(i+1)+": "+curPlayerList[i].name+" "+curPlayerList[i].score;
-			questDiv.appendChild(p);
-		}
-	} else {
-		var p = document.createElement("p");
-	p.textContent = "Warte bis alle Spieler fertig sind...";
-	questDiv.appendChild(p);
-
-	}
-	*/	
+	// Spiel neu starten?
 	
 }
