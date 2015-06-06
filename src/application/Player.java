@@ -29,6 +29,8 @@ public class Player {
     private int questionIndex = -1;
     private List<Question> questions;
     private TimerTask timeoutTask;
+    
+    private String sessionID;
 
     /**
      * Constructs a new player with the given name.
@@ -38,6 +40,8 @@ public class Player {
     protected Player(String name) {
         this.name = name;
     }
+    
+   
 
     /**
      * Returns the name of the player.
@@ -234,5 +238,13 @@ public class Player {
         long timeLeft = Math.max(timeout - timeTaken, 0);
         long score = (timeLeft * 1000) / timeout;
         return ((score + 5) / 10) * 10;
+    }
+    
+    public void setSessionID(String sessionID){
+    	this.sessionID = sessionID;
+    }
+    
+    public String getSessionID(){
+    	return this.sessionID;
     }
 }

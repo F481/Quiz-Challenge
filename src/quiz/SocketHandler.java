@@ -62,6 +62,8 @@ public class SocketHandler {
 				System.out.println("typ 1 empfangen - erstelle  neuen spieler");
 				// erzeuge Spieler mit Namen aus Paket
 				this.player = Quiz.getInstance().createPlayer(((String) sMessage.getMessage()[0]), quizError);
+				
+				this.player.setSessionID(session.getId());
 
 				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
@@ -114,15 +116,9 @@ public class SocketHandler {
 					return;
 				}
 				// send start game to all players - Broadcast
-				System.out.println("Send start game broadcast");
-				for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-					Session s = ConnectionManager.getSession(i);
-					try {
-						s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());
-					} catch (IOException | JSONException e) {
-						// ignore
-					}
-				}
+				System.out.println("Send start game broadcast");				
+				sendStartGame();
+
 				// sende Spielerliste an alle Spieler
 				sendPlayerList();
 				break;
@@ -141,6 +137,7 @@ public class SocketHandler {
 						System.out.println("Spiel ende");
 						for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
 							Session s = ConnectionManager.getSession(i);
+							s.getId();
 							try {
 								s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{true}).getJsonString());
 								//s.getBasicRemote().sendText(new SocketJSONMessage(12).getJsonString());
@@ -216,28 +213,9 @@ public class SocketHandler {
 				System.out.println("default konnte nicht auswerten");
 				break;
 				
-		}
-		
+		}		
 	}
-	
-
-	public void sendPlayerList(){
 		
-		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
-		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-			System.out.println("sende typ 6 an spieler: " + i);
-			Session s = ConnectionManager.getSession(i);
-			try {
-				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}			
-		}
-	}
-
-	
 	
 	
 	@OnError
@@ -250,7 +228,7 @@ public class SocketHandler {
 	@OnClose
 	// Client meldet sich wieder ab
 	public void close(Session session, CloseReason reason) {
-		
+
 		if(player != null){			
 			if(player.getId() == 0){ // Spieler war Spielleiter
 				System.out.println("remove player (player was gamemaster!)");
@@ -288,6 +266,48 @@ public class SocketHandler {
 		}		
 	}
 	
+	
+	
+	public void sendPlayerList(){
+		
+		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
+		Quiz quiz = Quiz.getInstance();
+		for(Player pTemp : quiz.getPlayerList()){  
+
+			int id = Integer.parseInt(pTemp.getSessionID());
+			Session s = ConnectionManager.getSession(id);
+			System.out.println("sende typ 6 an spieler: " + id);
+			try {
+				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}	
+		}
+	}
+
+	
+	public void sendStartGame(){
+
+		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
+		Quiz quiz = Quiz.getInstance();
+		for(Player pTemp : quiz.getPlayerList()){  
+
+			int id = Integer.parseInt(pTemp.getSessionID());
+			Session s = ConnectionManager.getSession(id);
+			System.out.println("sende typ 7 an spieler: " + id);
+			try {
+				s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());				
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}	
+		}
+		
+	}
+	
 
 	/**
 	 * Funktion um Fehlernachricht an Client zu senden
@@ -298,6 +318,7 @@ public class SocketHandler {
 	public static void sendError(Session session, int fatal, String message){
 
 		try {
+			// build JSON-String and send error message
 			session.getBasicRemote().sendText(new SocketJSONMessage(255, new Object[]{fatal, message}).getJsonString());
 		} catch (JSONException | IOException e) {
 			// TODO Auto-generated catch block
@@ -312,12 +333,15 @@ public class SocketHandler {
 	 * @param message Fehlernachricht, die an den Client versendet wird
 	 */
 	public static void sendErrorToAll(int fatal, String message){
-		// sende Nachricht an alle Sessions (Spieler - Broadcast)
-		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-			System.out.println("sende typ 6 an spieler: " + i);
-			Session s = ConnectionManager.getSession(i);
+		// sende Fehlernachricht an alle Sessions (Spieler - Broadcast)
+		Quiz quiz = Quiz.getInstance();
+		for(Player pTemp : quiz.getPlayerList()){ 
+			// get session ID of player
+			int id = Integer.parseInt(pTemp.getSessionID());
+			Session s = ConnectionManager.getSession(id);
+			// send error message
 			sendError(s, 1, message);		
-		}
+		}		
 	}
 	
 }

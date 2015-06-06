@@ -291,5 +291,10 @@ public class Game {
         playerChanged.signalAll();
         lock.unlock();
     }
+    
+    
+    public long getActivePlayerCount(){
+    	return this.activePlayers;
+    }
 
 }

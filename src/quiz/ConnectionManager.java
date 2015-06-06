@@ -17,7 +17,9 @@ public class ConnectionManager
     public  static synchronized int SessionCount() { return socketliste.size();}
     // Verbindung hinzufügen
     public  static synchronized void addSession(Session session) 
-    { socketliste.add(session);    }
+    { socketliste.add(session); 
+    // System.out.println("session bla: " + session.toString());
+    }
     // Verbindung entfernen
     public  static synchronized void SessionRemove(Session session) { socketliste.remove(session);}
 

@@ -2,6 +2,7 @@ package quiz;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import application.Player;
 import application.Quiz;
@@ -129,19 +130,22 @@ public class SocketJSONMessage {
 		switch(this.messageType){
 			case 6: // PlayerList
 				Quiz quiz = Quiz.getInstance();
-				// baue Spielerliste
+				
+				JSONArray jArray = new JSONArray();
+				
+				// baue Spielerliste (sollte davor noch sortiert werden ...!)
 				int playerCounter = 0;
 		    	for(Player pTemp : quiz.getPlayerList()){    		
-		    		// build string for key player
-		    		String playerX = "player" + playerCounter + "Name";
-		    		jObject.put(playerX, pTemp.getName());
-		    		// build string for key score		    		
-		    		String scoreX = "player" + playerCounter + "Score";
+		    		// Object for Player
+		    		JSONObject jObjectPlayer = new JSONObject();
+		    		// fill name + score in Object
+		    		jObjectPlayer.put("playername", pTemp.getName());
 		    		String score = Long.toString(pTemp.getScore());
-		    		jObject.put(scoreX, score);
-
+		    		jObjectPlayer.put("score", score);
+		    		jArray.put(jObjectPlayer);
 		    		playerCounter++;
 		    	}
+		    	jObject.put("players", jArray);
 				break;
 			case 7: // StartGame
 				// nothing to do

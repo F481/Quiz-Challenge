@@ -81,8 +81,8 @@ function receiveWSMessage(message){
 			activeCatalog = parsedJSONMessage.catalogName;
 			highlichtChoosenCatalog(activeCatalog);
 			break;
-		case 6: // StartGame
-			console.log("Playerlist: ");
+		case 6: // PlayerList
+			console.log("playerlist" );
 			var playerlist = parsedJSONMessage;
 			curPlayerList = playerlist;
 			updatePlayerList(playerlist);
@@ -313,75 +313,34 @@ function highlichtChoosenCatalog(catalogName){
 
 
 function updatePlayerList(playerlist){
-	// var length = playerlist.keys.length;
-	// alert("score " + playerlist.playerScore);
+
+	// get playerlist table
 	var table = document.getElementById("highscoreTable").getElementsByTagName("tbody")[0];
-	
+	// remove all entries of table
 	while (table.firstChild) {
 		table.removeChild(table.firstChild);
 	}
+
+	playerCount = 0;
+
+	// JSON String
+	// message data Playerlist: {"messageType":6,"players":[{"score":"0","player":"dsgffd"},{"score":"0","player":"qwe"}]}
 	
-	if(playerlist.hasOwnProperty('player2Name')){
-		// highscore entry for player 1
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "1";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player0Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player0Score;
-		// highscore entry for player 2		
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "2";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player1Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player1Score;
-		// highscore entry for player 3
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "3";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player2Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player2Score;
-		
-		playerCount = 3;
-	}
-	else if(playerlist.hasOwnProperty('player1Name')){
-		// highscore entry for player 1
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "1";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player0Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player0Score;
-		// highscore entry for player 2		
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "2";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player1Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player1Score;
-		
-		playerCount = 2;
-	}
-	else {
-		// highscore entry for player 1
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = "1";
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerlist.player0Name;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerlist.player0Score;
-		
-		playerCount = 1;
-	}
+	var playerListArray = playerlist.players;	
+	var length = playerListArray.length; 
 	
+	// build table entries
+	for(var i=0;i<length;i++){
+		var row = table.insertRow();
+		var cellRank = row.insertCell();
+		cellRank.textContent = i+1;
+		var cellPlayer = row.insertCell();
+		cellPlayer.textContent = playerListArray[i].playername;
+		var cellScore = row.insertCell();
+		cellScore.textContent = playerListArray[i].score;
+		
+		playerCount++;
+	}
 
 	if((playerId == 0) && (gameRunning == false)){
 		// aktiviere Startbutton wenn genug Spieler + Katalog ausgewählt
@@ -394,8 +353,7 @@ function updatePlayerList(playerlist){
 			buttonStart.textContent = "Spiel starten";
 			buttonStart.disabled = false;
 		}
-	}
-	
+	}	
 }
 
 
