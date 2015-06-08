@@ -63,13 +63,14 @@ public class SocketHandler {
 				// erzeuge Spieler mit Namen aus Paket
 				this.player = Quiz.getInstance().createPlayer(((String) sMessage.getMessage()[0]), quizError);
 				
-				this.player.setSessionID(session.getId());
-
 				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
 					System.out.println("Login Error: Code: " + Integer.toString(quizError.getStatus()));
 					sendError(session, 1, "Spieler konnte nicht erstellt werden: " + quizError.getDescription());
 				}
+
+				// setzte Session ID für Spieler
+				this.player.setSessionID(session.getId());
 				
 				// anlegen des Spielers war erfolgreich
 				try {
@@ -135,16 +136,10 @@ public class SocketHandler {
 					System.out.println("Question ist null");
 					if(quiz.setDone(player)){ // das Spiel ist zu ende (aller Spieler haben alle Fragen beantwortet)
 						System.out.println("Spiel ende");
-						for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-							Session s = ConnectionManager.getSession(i);
-							s.getId();
-							try {
-								s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{true}).getJsonString());
-								//s.getBasicRemote().sendText(new SocketJSONMessage(12).getJsonString());
-							} catch (IOException | JSONException e) {
-								// ignore
-							}
-						}
+						
+						// sende GameOver (Nachricht mit MessageTyp 12) mit Platzierung an alle Spieler
+						sendGameOver();
+
 						// entferne alle Spieler aus dem Spiel
 						for(Player pTemp : quiz.getPlayerList()){
 							quiz.removePlayer(pTemp, quizError);
@@ -154,15 +149,6 @@ public class SocketHandler {
 						}
 					} else { // keine weiteren Fragen für diesen Spieler
 						System.out.println("Spieler ende");
-						/*
-						try {
-							session.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{false}).getJsonString());
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							sendError(session, 0, "Erstellen der GameOver Nachricht fehlgeschlagen!");
-						}
-						*/
 					}
 				} else { // sende Frage + Antworten an Client
 					// baue Antworten-Array
@@ -267,17 +253,20 @@ public class SocketHandler {
 	}
 	
 	
-	
+	/**
+	 * Methoden sendet PlayerList (Nachricht mit dem Typ 6) an alle Spieler
+	 */
 	public void sendPlayerList(){
 		
 		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
 		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){  
-
+			// hole Sessioninformationen
 			int id = Integer.parseInt(pTemp.getSessionID());
 			Session s = ConnectionManager.getSession(id);
 			System.out.println("sende typ 6 an spieler: " + id);
 			try {
+				// baue Nachricht + versende Nachricht
 				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -287,25 +276,86 @@ public class SocketHandler {
 		}
 	}
 
-	
+
+	/**
+	 * Methoden sendet StartGame (Nachricht mit dem Typ 7) an alle Spieler
+	 */
 	public void sendStartGame(){
 
-		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
+		// sende StartGame an alle Spieler - Broadcast		
 		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){  
-
+			// hole Sessioninformationen
 			int id = Integer.parseInt(pTemp.getSessionID());
 			Session s = ConnectionManager.getSession(id);
 			System.out.println("sende typ 7 an spieler: " + id);
 			try {
+				// baue Nachricht + versende Nachricht
 				s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());				
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}	
+		}		
+	}
+	
+	
+	/**
+	 * Methoden sendet GameOver (Nachricht mit dem Typ 12) mit der jeweiligen Platzierung an alle Spieler
+	 */
+	public void sendGameOver(){
+				
+		String[] player_Name = new String[6];
+		String[] player_SID = new String[6];
+		long[] player_Score = new long[6];
+		
+		// hole Spielerinformationen (Name, SID, Punktezahl)
+		int playercount=0;
+		Quiz quiz = Quiz.getInstance();	
+		for(Player pTemp : quiz.getPlayerList()){  
+
+			player_Name[playercount] = pTemp.getName();
+			player_SID[playercount] = pTemp.getSessionID();
+			player_Score[playercount] = pTemp.getScore();
+			playercount++;
 		}
 		
+		// sortiere Arrays nach Punktezahl
+		for(int i = playercount; i > 0 ; i--){
+			for(int j=0; j<(playercount-1);j++){
+				// vergleiche Spielstaende - ist Spielstand des nachfolgender groesser - tausche Plaetze
+				if(player_Score[j] < player_Score[j+1]){
+					long temp_Score = player_Score[j];
+					String temp_playerName = player_Name[j];
+					String temp_SID = player_SID[j];
+					
+					player_Score[j] = player_Score[j+1];
+					player_Name[j] = player_Name[j+1];
+					player_SID[j] = player_SID[j+1];
+					
+					player_Score[j+1] = temp_Score;
+					player_Name[j+1] = temp_playerName;
+					player_SID[j+1] = temp_SID;
+				}
+			}
+		}
+
+		// sende Platzierung an jeden Spieler
+		for(int i=0;i<playercount;i++){
+			// hole Sessioninformationen
+			int id = Integer.parseInt(player_SID[i]);
+			Session s = ConnectionManager.getSession(id);
+			System.out.println("sende typ 12 an den spieler mit ID: " + id);
+			try {
+				// baue Nachricht + versende Nachricht
+				s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{i+1}).getJsonString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}			
+		}
 	}
 	
 

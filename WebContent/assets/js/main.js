@@ -82,13 +82,13 @@ function receiveWSMessage(message){
 			highlichtChoosenCatalog(activeCatalog);
 			break;
 		case 6: // PlayerList
-			console.log("playerlist" );
+			console.log("PlayerList" );
 			var playerlist = parsedJSONMessage;
 			curPlayerList = playerlist;
 			updatePlayerList(playerlist);
 			break;
 		case 7: // StartGame
-			console.log("Startgame: ");
+			console.log("Startgame");
 			gameRunning = true;
 			// clear login stuff
 			clearLoginDiv();
@@ -97,7 +97,7 @@ function receiveWSMessage(message){
 			sendWSMessage(8);
 			break;
 		case 9: // Question
-			console.log("Question: ");
+			console.log("Question: " + parsedJSONMessage.question);
 			curQuestion = parsedJSONMessage.question;
 			curAnswer1 = parsedJSONMessage.answer1;
 			curAnswer2 = parsedJSONMessage.answer2;
@@ -131,7 +131,7 @@ function receiveWSMessage(message){
 			GameOver(parsedJSONMessage);			
 			break;
 		case 255: // Error
-			console.log("Error");			
+			console.log("Error: " + parsedJSONMessage.errorMessage);			
 			if(parsedJSONMessage.fatal == 1){ // Spiel beenden
 				alert("Es ist ein fataler Fehler aufgetreten: " + parsedJSONMessage.errorMessage + " Das Spiel wird beendet!");
 				// reload page to start new game?
@@ -289,7 +289,6 @@ function clickedCatalog(event){
 			var buttonStart = window.document.getElementById("buttonStart");
 			buttonStart.textContent = "Spiel starten";
 			buttonStart.disabled = false;
-			console.log("spielerleiter highlichtChoosenCatalog end");
 		}
     }	    
     event.stopPropagation();
@@ -413,7 +412,7 @@ function clickedStart(event){
 
 
 function showQuestion(){
-	console.log("frage anziegen");
+	console.log("frage anzeigen");
 	
 	
 	document.getElementById("QuestionText").textContent = curQuestion;
@@ -426,8 +425,7 @@ function showQuestion(){
 		answers[c].style.backgroundColor = "white";
 		answers[c].textContent = answerText[c];
 	}
-	document.getElementById("timeOut").textContent = "Time Out: " + curTimeOut
-			+ " Sekunden";
+	document.getElementById("timeOut").textContent = "Time Out: " + curTimeOut	+ " Sekunden";
 }
 
 
@@ -512,6 +510,6 @@ function GameOver(parsedJSONMessage) {
 		alert("Glückwünsch. Sie wurden " + rank + ".!");
 	}
 	
-	// Spiel neu starten?
+	// tue etwas - Seite neu laden, Sppiel neu starten?
 	
 }

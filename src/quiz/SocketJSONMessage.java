@@ -23,8 +23,6 @@ public class SocketJSONMessage {
 	 */
 	public SocketJSONMessage(String JSONString) throws JSONException{
 		
-		System.out.println("buld new socketjsonmessage (socketjsonmessage 25)");
-		
 		this.JSONString = JSONString;
 		
 		// lege neues JSON Objekt an
@@ -70,8 +68,6 @@ public class SocketJSONMessage {
 	 */
 	public SocketJSONMessage(int messageType, Object[] message) throws JSONException{
 	
-		System.out.println("buld new socketjsonmessage");
-		
 		this.messageType = messageType;
 		this.messageData = message;
 		
@@ -103,6 +99,10 @@ public class SocketJSONMessage {
 				jObject.put("timedOut", this.messageData[0]);
 				jObject.put("correct", this.messageData[1]);				
 				break;
+			case 12: // GameOver
+				System.out.println("GameOver");
+				jObject.put("rank", this.messageData[0]);
+				break;					
 			case 255: // Error
 				System.out.println("Error");				
 				jObject.put("fatal", this.messageData[0]);
@@ -119,8 +119,6 @@ public class SocketJSONMessage {
 	
 	public SocketJSONMessage(int messageType) throws JSONException {
 
-		System.out.println("buld new socketjsonmessage");
-		
 		this.messageType = messageType;
 				
 		// erstelle JSONObject und setze MessageType
@@ -142,7 +140,7 @@ public class SocketJSONMessage {
 					playercount++;
 				}
 				
-				// sortiere Array nach Punktezahl
+				// sortiere Arrays nach Punktezahl
 				for(int i = playercount; i > 0 ; i--){
 					for(int j=0; j<(playercount-1);j++){
 						// vergleiche Spielstaende - ist Spielstand des nachfolgender groesser - tausche Plaetze
@@ -178,11 +176,6 @@ public class SocketJSONMessage {
 			case 7: // StartGame
 				// nothing to do, no message content (beside message type)
 				break;
-			case 12: // GameOver
-				System.out.println("GameOver");
-				//jObject.put("isAllOver", this.messageData[0]);
-				jObject.put("rank", "1");
-				break;				
 			default:
 				break;				
 		}

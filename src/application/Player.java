@@ -39,9 +39,7 @@ public class Player {
      */
     protected Player(String name) {
         this.name = name;
-    }
-    
-   
+    }   
 
     /**
      * Returns the name of the player.
