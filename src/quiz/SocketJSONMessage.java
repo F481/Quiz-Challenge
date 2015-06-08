@@ -131,24 +131,52 @@ public class SocketJSONMessage {
 			case 6: // PlayerList
 				Quiz quiz = Quiz.getInstance();
 				
-				JSONArray jArray = new JSONArray();
+				String[] player_Name = new String[6];
+				long[] player_Score = new long[6];
 				
-				// baue Spielerliste (sollte davor noch sortiert werden ...!)
-				int playerCounter = 0;
-		    	for(Player pTemp : quiz.getPlayerList()){    		
+				// hole Spielerinformationen (Name + Punktezahl)
+				int playercount=0;
+				for(Player pTemp : quiz.getPlayerList()){  
+					player_Name[playercount] = pTemp.getName();
+					player_Score[playercount] = pTemp.getScore();
+					playercount++;
+				}
+				
+				// sortiere Array nach Punktezahl
+				for(int i = playercount; i > 0 ; i--){
+					for(int j=0; j<(playercount-1);j++){
+						// vergleiche Spielstaende - ist Spielstand des nachfolgender groesser - tausche Plaetze
+						if(player_Score[j] < player_Score[j+1]){
+							long temp_Score = player_Score[j];
+							String temp_playerName = player_Name[j];
+							
+							player_Score[j] = player_Score[j+1];
+							player_Name[j] = player_Name[j+1];
+							
+							player_Score[j+1] = temp_Score;
+							player_Name[j+1] = temp_playerName;
+						}
+					}
+				}
+
+				// baue JSON Array
+				JSONArray jArray = new JSONArray();
+		    	for(int k = 0; k < playercount; k++){    		
 		    		// Object for Player
 		    		JSONObject jObjectPlayer = new JSONObject();
 		    		// fill name + score in Object
-		    		jObjectPlayer.put("playername", pTemp.getName());
-		    		String score = Long.toString(pTemp.getScore());
+		    		jObjectPlayer.put("playername", player_Name[k]);
+		    		String score = Long.toString(player_Score[k]);
 		    		jObjectPlayer.put("score", score);
 		    		jArray.put(jObjectPlayer);
-		    		playerCounter++;
-		    	}
+		    	}				
+				
+		    	// füge Array dem Objekt hinzu -> Objekt enthält dann MessageType und ein Array, das wiederum Objekte enthält (mit Informationen zu Spieler + Punktestand
+		    	// JSON String sieht dann wie folgt aus: message data Playerlist: {"messageType":6,"players":[{"score":"0","player":"dsgffd"},{"score":"0","player":"qwe"}]}
 		    	jObject.put("players", jArray);
 				break;
 			case 7: // StartGame
-				// nothing to do
+				// nothing to do, no message content (beside message type)
 				break;
 			case 12: // GameOver
 				System.out.println("GameOver");
