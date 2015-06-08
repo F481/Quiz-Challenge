@@ -111,8 +111,10 @@ function receiveWSMessage(message){
 			console.log("Correct: " + parsedJSONMessage.correct);
 			
 			// markiere Spielerauswahl rot
-			document.getElementById(curSelection).style.borderColor = "red";
-			document.getElementById(curSelection).style.backgroundColor = "#FF0800";
+			if(curSelection != -1){
+				document.getElementById(curSelection).style.borderColor = "red";
+				document.getElementById(curSelection).style.backgroundColor = "#FF0800";				
+			}
 			
 			// markiere korrekte Antworten grüen
 			document.getElementById(parsedJSONMessage.correct).style.borderColor = "green";
@@ -136,6 +138,9 @@ function receiveWSMessage(message){
 				alert("Es ist ein fataler Fehler aufgetreten: " + parsedJSONMessage.errorMessage + " Das Spiel wird beendet!");
 				// reload page to start new game?
 				// startNewGame(); --> function is not implemented yet
+				// tue etwas - Seite neu laden, Sppiel neu starten?
+			    // clean up main div
+			    document.getElementById("main").innerHTML = "<h1>Das Spiel wurde beendet!</h1>";
 			} else { // Fehler ist nicht fatal, Spiel wird nicht beendet
 				console.log("Warning: " + parsedJSONMessage.errorMessage);
 			}
@@ -412,18 +417,17 @@ function clickedStart(event){
 
 
 function showQuestion(){
-	console.log("frage anzeigen");
-	
+	console.log("frage anzeigen");	
 	
 	document.getElementById("QuestionText").textContent = curQuestion;
 
 	var answerText = [ curAnswer1, curAnswer2, curAnswer3, curAnswer4 ];
 
 	var answers = document.getElementsByClassName("answerDiv");
-	for (var c = 0; c < 4; c++) {
-		answers[c].style.borderColor = "black";
-		answers[c].style.backgroundColor = "white";
-		answers[c].textContent = answerText[c];
+	for (var i = 0; i < 4; i++) {
+		answers[i].style.borderColor = "black";
+		answers[i].style.backgroundColor = "white";
+		answers[i].textContent = answerText[i];
 	}
 	document.getElementById("timeOut").textContent = "Time Out: " + curTimeOut	+ " Sekunden";
 }
@@ -433,20 +437,19 @@ function showGameDiv(){
 	
 	var mainDiv = document.getElementById("main");
 	
-	// div (container) für Frage, Antwort, Timer
+	// div (container) für Überschrift (Fragenkatalog), Frage, Antworten, Timer
 	var questDiv = document.createElement("div");
-	
-	// div für Fragen
-	var question = document.createElement("div");
-	question.id = "QuestionText";
-	question.style.fontSize = "16px";
-
 	questDiv.id = "questDiv";
-
+	
 	// Überschrift Fragenkatalog
 	var title = document.createElement("h3");
 	title.id = "GameDivTitle";
 	title.textContent = "Fragekatalog: " + activeCatalog;
+	
+	// div für Frage
+	var question = document.createElement("div");
+	question.id = "QuestionText";
+	question.style.fontSize = "16px";
 	
 	questDiv.appendChild(title);
 	questDiv.appendChild(question);
@@ -467,6 +470,7 @@ function showGameDiv(){
 				sendWSMessage(10);
 			}
 		}, false);
+		// füge Frage dem div hinzu ("zeige Frage an")
 		questDiv.appendChild(answers[i]);
 	}
 	
@@ -477,7 +481,7 @@ function showGameDiv(){
 	// füge Time out dem div hinz
 	questDiv.appendChild(timeOut);
 	
-	// füge Frage, Antworten + Timer dem main div hinz
+	// füge für Überschrift (Fragenkatalog), Frage, Antworten, Timer dem main div hinzu
 	mainDiv.appendChild(questDiv);
 }
 
@@ -511,5 +515,7 @@ function GameOver(parsedJSONMessage) {
 	}
 	
 	// tue etwas - Seite neu laden, Sppiel neu starten?
+    // clean up main div
+    document.getElementById("main").innerHTML = "<h1>Das Spiel ist zu Ende!</h1>";
 	
 }

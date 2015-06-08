@@ -24,7 +24,7 @@ public class SocketJSONMessage {
 	public SocketJSONMessage(String JSONString) throws JSONException{
 		
 		this.JSONString = JSONString;
-		
+
 		// lege neues JSON Objekt an
 		JSONObject jObject = new JSONObject(this.JSONString);
 
@@ -117,6 +117,11 @@ public class SocketJSONMessage {
 	}
 	
 	
+	/**
+	 * Konstruktor baut JSON-Objekt aus MessageTyp
+	 * @param messageType Typ der Nachricht
+	 * @throws JSONException
+	 */
 	public SocketJSONMessage(int messageType) throws JSONException {
 
 		this.messageType = messageType;
@@ -181,8 +186,7 @@ public class SocketJSONMessage {
 		}
     	
 		// konvertiere JSON-Obejt zu String
-		this.JSONString = jObject.toString();
-	
+		this.JSONString = jObject.toString();	
 	}	
 	
 

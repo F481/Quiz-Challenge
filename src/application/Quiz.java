@@ -239,6 +239,9 @@ public class Quiz {
             game.signalPlayerChange();
         }
 
+        System.out.println("corrrectIndex: " + correctIndex);
+        System.out.println("corrrectIndex LongVla8ue: " + correctIndex.longValue());
+        
         return correctIndex.longValue();
     }
 

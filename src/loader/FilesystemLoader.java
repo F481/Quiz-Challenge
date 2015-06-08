@@ -127,7 +127,6 @@ public class FilesystemLoader implements CatalogLoader {
 		for(Document doc : xmlDocuments){
 			Element fragenkatalog = doc.getRootElement();
 			catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), new QuestionFileLoader(doc)));
-			// catalogs.put(fragenkatalog.getAttributeValue("name"), new Catalog(fragenkatalog.getAttributeValue("name"), null));
 		}
 		
         return catalogs;
@@ -220,8 +219,6 @@ public class FilesystemLoader implements CatalogLoader {
         public List<Question> getQuestions(Catalog catalog)
             throws LoaderException {
 
-        	System.out.println("GetQuestion start (filesystemlader.java line 223)");
-        	
             if (!questions.isEmpty()) {
                 return questions;
             }
@@ -270,16 +267,16 @@ public class FilesystemLoader implements CatalogLoader {
 			for(Element questionElement : fragenkatalog.getChildren()) {
 				Question question = new Question(questionElement.getChildText("frage"));				
 				String timeout = questionElement.getAttributeValue("timeout");
-				if(timeout == null)
-					timeout = "10";
-				question.setTimeout(Long.parseLong(timeout) * 100);
+				if(timeout == null){
+					timeout = "10";					
+				}
+				question.setTimeout(Long.parseLong(timeout));
 				for(Element answer : questionElement.getChildren("antwort")) {					
 					if(answer.getAttributeValue("richtig").equals("true"))
 						question.addAnswer(answer.getText());
 					else
 						question.addBogusAnswer(answer.getText());
 				}
-	        	System.out.println("question: (filesystemload.java 282: " + question.getQuestion());
 				questions.add(question);
 			}            
             return questions;

@@ -147,7 +147,7 @@ public class SocketHandler {
 								System.out.println(quizError.getDescription());
 							}
 						}
-					} else { // keine weiteren Fragen für diesen Spieler
+					} else { // keine weiteren Fragen für diesen Spieler, warte auf Spielende
 						System.out.println("Spieler ende");
 					}
 				} else { // sende Frage + Antworten an Client
@@ -186,6 +186,7 @@ public class SocketHandler {
 				}
 				try {
 					// sende QuestionResult
+					System.out.println("index right answer: " + rightAnswer);
 					session.getBasicRemote().sendText(new SocketJSONMessage(11, new Object[] { false, rightAnswer }).getJsonString());
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -383,14 +384,14 @@ public class SocketHandler {
 	 * @param message Fehlernachricht, die an den Client versendet wird
 	 */
 	public static void sendErrorToAll(int fatal, String message){
-		// sende Fehlernachricht an alle Sessions (Spieler - Broadcast)
+		// sende Fehlernachricht an alle Sessions (Spieler) - Broadcast
 		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){ 
 			// get session ID of player
 			int id = Integer.parseInt(pTemp.getSessionID());
 			Session s = ConnectionManager.getSession(id);
 			// send error message
-			sendError(s, 1, message);		
+			sendError(s, fatal, message);		
 		}		
 	}
 	
