@@ -42,10 +42,11 @@ public class SocketHandler {
 		Quiz quiz = Quiz.getInstance();
 		QuizError quizError = new QuizError();
 		
-		System.out.println("Nachricht empfangen: " + msg);
-		
+		System.out.println("Nachricht empfangen: " + msg);		
+
 		SocketJSONMessage sMessage = null;
 		try {
+			// erzeuge neues Nachrichtenobjekt und parse JSON-String
 			sMessage = new SocketJSONMessage(msg);	
 		} catch (JSONException e){
 			e.printStackTrace();
@@ -55,6 +56,7 @@ public class SocketHandler {
 		
 		System.out.println("Nachricht auswerten: " + msg);
 		
+		// werte Nachrichtentyp aus
 		int type = sMessage.getMessageType();
 		System.out.println("type: " + type);
 		switch(type){
@@ -124,15 +126,16 @@ public class SocketHandler {
 				sendPlayerList();
 				break;
 			case 8: // QuestionRequest
-				System.out.println("typ 8 empfangen - ");
+				System.out.println("typ 8 empfangen - QuestionRequest, sende Frage an Client");
 				// starte Timer für Frage
 				curTimeOut = new Timer(player, session);
+				// hole Frage für Spieler
 				Question question = quiz.requestQuestion(player, curTimeOut, quizError);
 				if (quizError.isSet()) {
 					System.out.println("Error: " + quizError.getDescription());
 					sendError(session, 1, "Konnte Question nicht laden: " + quizError.getDescription());
 				} else if (question == null && !quizError.isSet()) {
-					// keine weitere Frage - Spielende für diesen Spieler
+					// keine weitere Frage - Spielende
 					System.out.println("Question ist null");
 					if(quiz.setDone(player)){ // das Spiel ist zu ende (aller Spieler haben alle Fragen beantwortet)
 						System.out.println("Spiel ende");
@@ -148,7 +151,7 @@ public class SocketHandler {
 							}
 						}
 					} else { // keine weiteren Fragen für diesen Spieler, warte auf Spielende
-						System.out.println("Spieler ende");
+						System.out.println("Spieler ende, warte auf andere Spieler");
 					}
 				} else { // sende Frage + Antworten an Client
 					// baue Antworten-Array
@@ -187,6 +190,7 @@ public class SocketHandler {
 				try {
 					// sende QuestionResult
 					System.out.println("index right answer: " + rightAnswer);
+					// Parameter false -> Timeout nicht abgelaufen + Index der richtigen Antwort
 					session.getBasicRemote().sendText(new SocketJSONMessage(11, new Object[] { false, rightAnswer }).getJsonString());
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -198,8 +202,7 @@ public class SocketHandler {
 				break;	
 			default:
 				System.out.println("default konnte nicht auswerten");
-				break;
-				
+				break;				
 		}		
 	}
 		
@@ -393,6 +396,5 @@ public class SocketHandler {
 			// send error message
 			sendError(s, fatal, message);		
 		}		
-	}
-	
+	}	
 }

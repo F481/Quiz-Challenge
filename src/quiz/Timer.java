@@ -13,7 +13,11 @@ import application.Quiz;
 
 
 
-
+/*
+ * Klasse für das Timout der Fragen
+ * Ist Timout einer Frage abgelaufen wird eine Nachricht
+ * mit den korrekten Antworten an den Client gesendet
+ */
 public class Timer extends TimerTask {
 	
 	private Session tSession;
@@ -32,7 +36,9 @@ public class Timer extends TimerTask {
 		try {
 			QuizError qError = new QuizError();
 			try {
+				// erstelle Timoutnachricht und sende diese an den Client
 				tSession.getBasicRemote().sendText(
+						// Parameter true -> Timeout abgelaufen + Index der richtigen Antwort
 						new SocketJSONMessage(11, new Object[] { true, Quiz.getInstance().answerQuestion(tPlayer, -1, qError) })
 								.getJsonString());
 			} catch (JSONException e) {

@@ -31,6 +31,10 @@ var isQuestionActive = false;
 var curSelection = -1;
 
 
+/*
+ * Funktion wird nachdem die Seite geladen wurde aufgerufen
+ * Initiiert Websocketverbindung, Listener werden registriert
+ */
 function init(){
 
     // lauftext();
@@ -64,8 +68,12 @@ function init(){
 }
 
 
+/*
+ * Funktion empfängt über Websocket Nachrichten im JSON-Format
+ */
 function receiveWSMessage(message){
-		
+	
+	// parse JSON-Nachricht
 	var parsedJSONMessage = JSON.parse(message.data);
 	
 	console.log("Received message type: " + parsedJSONMessage.messageType);
@@ -152,6 +160,9 @@ function receiveWSMessage(message){
 }
 
 
+/*
+ * Funktion sendet über Websocket Nachrichten im JSON-Format
+ */
 function sendWSMessage(type){
 	// verify if websocket is ready to send
 	if(readyToSend){
@@ -219,6 +230,11 @@ function sendWSMessage(type){
 }
 
 
+/*
+ * Funktion aktualisiert nach erfolgreichem Login den main-div
+ * (Login-Feld + Button wird entfernt, abhängig von Spieler-ID wird der 
+ * Start-Button angepasst, Kataloge werden angefordert
+ */
 function processSuccessfulLogin(){
 	
 	// remove login button + name input field
@@ -239,126 +255,6 @@ function processSuccessfulLogin(){
 	requestCatalogs();
 }
 
-
-function requestCatalogs() {
-	// prüefe ob Browser AJAX unterstützt
-	if (window.XMLHttpRequest){ // code for IE7+, Firefox, Chrome, Opera, Safari
-		// create AJAX-Request-Object
-		request = new XMLHttpRequest();
-		
-		// Kommunikation mit Server initialisieren
-		request.open("GET", "AjaxCatalogServerlet", true);
-		
-		// Eventhandler registrieren, um auf asynchrone Antwort vom Server reagieren zu können
-		request.onreadystatechange = ajaxServerCatalogResponse;
-		
-		// Anfrage senden
-		request.send(null);		
-	} else { // code for IE6, IE5, non AJAX compatible browsers
-		alert("Kann Katalog nicht auswählen - Browser unterstützt kein AJAX. Für das Spiel ist IE7+, Firefox, Chrome, Opera, Safari oder ein anderer AJAX-fähriger Browser notwendig!");
-	}	
-}
-
-
-function ajaxServerCatalogResponse(){
-
-	// States (0 - uninitialized, 1 - open, 2 - sent, 3 - receiving) werden nicht verarbeitet
-	
-	// State 4 - die Antwort des Servers liegt vollständig vor
-	if(request.readyState == 4){
-		var answer = request.responseXML.getElementsByTagName("catalogName");
-		for(var i = 0; i < answer.length; i++){
-			// erzeuge div mit Text, weise CSS-Klasse hinzu
-			var catalogDiv = document.createElement("div");
-			catalogDiv.className = "catalogList";
-			catalogDiv.textContent = answer[i].firstChild.nodeValue;
-			// füge div zum DOM-Baum hinzu + registriere EventListener
-			document.getElementById("catalogs").appendChild(catalogDiv);
-			catalogDiv.addEventListener("click", clickedCatalog, false);
-		}
-	}
-}
-
-
-function clickedCatalog(event){
-	if((playerId == 0) && (gameRunning == false)){
-        // hebe den ausgewählten Katalog hervor
-        activeCatalog = event.target.textContent;        
-        highlichtChoosenCatalog(activeCatalog);
-        
-        // send catalog change
-        sendWSMessage(5);
-        
-        // passe start button an falls genügend Spieler angemeldet sind (Text ändern, Start button aktivieren)
-		if(playerCount >= 2){
-			var buttonStart = window.document.getElementById("buttonStart");
-			buttonStart.textContent = "Spiel starten";
-			buttonStart.disabled = false;
-		}
-    }	    
-    event.stopPropagation();
-}
-
-
-function highlichtChoosenCatalog(catalogName){
-	
-	// get all catalogs and set background to default
-    var catalogArray = window.document.getElementsByClassName("catalogList");
-    for(var i = 0; i < catalogArray.length; i++) {
-    	if(catalogArray[i].textContent == catalogName){
-    		// hebe den aktiven Katalog vor
-    		catalogArray[i].style.backgroundColor="#ffa500";
-    	} else {
-    		// setze Farbe bei allen anderen Katalogen zurück
-    		catalogArray[i].style.backgroundColor="#f3f3f3";
-    	}
-    }
-}
-
-
-function updatePlayerList(playerlist){
-
-	// get playerlist table
-	var table = document.getElementById("highscoreTable").getElementsByTagName("tbody")[0];
-	// remove all entries of table
-	while (table.firstChild) {
-		table.removeChild(table.firstChild);
-	}
-
-	playerCount = 0;
-
-	// JSON String
-	// message data Playerlist: {"messageType":6,"players":[{"score":"0","player":"dsgffd"},{"score":"0","player":"qwe"}]}
-	
-	var playerListArray = playerlist.players;	
-	var length = playerListArray.length; 
-	
-	// build table entries
-	for(var i=0;i<length;i++){
-		var row = table.insertRow();
-		var cellRank = row.insertCell();
-		cellRank.textContent = i+1;
-		var cellPlayer = row.insertCell();
-		cellPlayer.textContent = playerListArray[i].playername;
-		var cellScore = row.insertCell();
-		cellScore.textContent = playerListArray[i].score;
-		
-		playerCount++;
-	}
-
-	if((playerId == 0) && (gameRunning == false)){
-		// aktiviere Startbutton wenn genug Spieler + Katalog ausgewählt
-		if((playerCount >= 2) && (activeCatalog == "")){
-			var buttonStart = window.document.getElementById("buttonStart");
-			buttonStart.textContent = "Wähle Katalog um Spiel zu starten";
-		}
-		else if((playerCount >= 2) && (activeCatalog != "")){
-			var buttonStart = window.document.getElementById("buttonStart");
-			buttonStart.textContent = "Spiel starten";
-			buttonStart.disabled = false;
-		}
-	}	
-}
 
 
 /*
@@ -381,6 +277,11 @@ function lauftext() {
 */
 
 
+/*
+ * Funnktion reagiert auf den Klick auf den
+ * Login Button. Eingabe des Spielers wird
+ * ausgwertet und an den Server gesendet
+ */
 function clickedLogin(event){
 
 	var inputName = window.document.getElementById("inputName");
@@ -397,13 +298,21 @@ function clickedLogin(event){
 
 
 
-
+/*
+ * Funktion entfernt den Inhalt aus dem main-div
+ * (z.B. Login-Feld, Login-Button)
+ */
 function clearLoginDiv(){
     // clean up main div
     document.getElementById("main").innerHTML = "";
 }
 
 
+/*
+ * Listener für den Klick auf den Start-Button
+ * Main-div wird aktualisert und eine Spiel-Starten-
+ * Nachricht wird an den Server gesendet
+ */
 function clickedStart(event){
 
     // clean up main div
@@ -416,6 +325,9 @@ function clickedStart(event){
 }
 
 
+/*
+ * Funktion zeigt aktuelle Frage, Antworten und Timeout an
+ */
 function showQuestion(){
 	console.log("frage anzeigen");	
 	
@@ -433,6 +345,10 @@ function showQuestion(){
 }
 
 
+/*
+ * Funktion aktualisiert den main-div und legt darin Inhalte für 
+ * Fragen, Antworten und Timeout an
+ */
 function showGameDiv(){
 	
 	var mainDiv = document.getElementById("main");
@@ -496,6 +412,10 @@ function clickedPlayer(event) {
 */
 
 
+/*
+ * Funktion zeigt Spielende und die Position
+ * des Spielers an
+ */
 function GameOver(parsedJSONMessage) {
 	var questDiv = document.getElementById("questDiv");
 	while (questDiv.firstChild) {
@@ -516,6 +436,5 @@ function GameOver(parsedJSONMessage) {
 	
 	// tue etwas - Seite neu laden, Sppiel neu starten?
     // clean up main div
-    document.getElementById("main").innerHTML = "<h1>Das Spiel ist zu Ende!</h1>";
-	
+    document.getElementById("main").innerHTML = "<h1>Das Spiel ist zu Ende!</h1>";	
 }
