@@ -17,6 +17,11 @@ import application.Quiz;
  * Klasse für das Timout der Fragen
  * Ist Timout einer Frage abgelaufen wird eine Nachricht
  * mit den korrekten Antworten an den Client gesendet
+ * 
+ * Ein TimerTask ist eine Klasse, die uns Runnable implementieren lässt und 
+ * Operationen umfasst, die zu einem Zeitpunkt oder in einer beliebigen Wiederholung 
+ * ausgeführt werden sollen.
+ * http://openbook.rheinwerk-verlag.de/javainsel9/javainsel_14_007.htm 
  */
 public class Timer extends TimerTask {
 	

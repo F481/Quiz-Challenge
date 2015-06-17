@@ -14,6 +14,7 @@ import javax.websocket.server.ServerEndpoint;
 import org.json.JSONException;
 
 import error.QuizError;
+import application.Catalog;
 import application.Player;
 import application.Question;
 import application.Quiz;
@@ -69,23 +70,38 @@ public class SocketHandler {
 				if (quizError.isSet()) {
 					System.out.println("Login Error: Code: " + Integer.toString(quizError.getStatus()));
 					sendError(session, 1, "Spieler konnte nicht erstellt werden: " + quizError.getDescription());
-				}
+				} 
+				// kein Fehler beim Erstellen des Spielers
+				else {
+					// setzte Session ID für Spieler
+					this.player.setSessionID(session.getId());
+					
+					// anlegen des Spielers war erfolgreich
+					try {
+						System.out.println("sende LoginResponseOK");
+						// sende LoginResponseOK mit Spieler-ID
+						session.getBasicRemote().sendText(new SocketJSONMessage(2, new Object[] { player.getId() }).getJsonString());
+					} catch (JSONException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+						sendError(session, 1, "LoginResponseOK konnte nicht erstellt werden!");
+					}
+					// sende aktualisierte Spielerliste an alle Spieler
+					sendPlayerList();
+					
 
-				// setzte Session ID für Spieler
-				this.player.setSessionID(session.getId());
-				
-				// anlegen des Spielers war erfolgreich
-				try {
-					System.out.println("sende LoginResponseOK");
-					// sende LoginResponseOK mit Spieler-ID
-					session.getBasicRemote().sendText(new SocketJSONMessage(2, new Object[] { player.getId() }).getJsonString());
-				} catch (JSONException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-					sendError(session, 1, "LoginResponseOK konnte nicht erstellt werden!");
+					// sende aktuellen / aktiven Katalog an Spieler
+					Catalog catalog = quiz.getCurrentCatalog();
+					if (catalog != null){
+						String catalogName = catalog.getName();
+						try {
+							// s.getBasicRemote().sendText(new SocketJSONMessage(5, sMessage.getMessage()).getJsonString());
+							session.getBasicRemote().sendText(new SocketJSONMessage(5, new Object[] { catalogName }).getJsonString());						
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}						
+					}
 				}
-				// sende aktualisierte Spielerliste an alle Spieler
-				sendPlayerList();
 				break;
 			case 5: // CatalogChange
 				System.out.println("typ 5 empfangen - setzte aktiven Katalog");				

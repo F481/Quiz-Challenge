@@ -237,6 +237,9 @@ function sendWSMessage(type){
  */
 function processSuccessfulLogin(){
 	
+	// request catalogs
+	requestCatalogs();
+	
 	// remove login button + name input field
 	var mainDiv = document.getElementById("main");
 	mainDiv.removeChild(document.getElementById("loginForm"));
@@ -250,9 +253,6 @@ function processSuccessfulLogin(){
 		// kein Spielleiter
 		buttonStart.textContent = "Warte auf Spielstart ...";
 	}
-	
-	// request catalogs
-	requestCatalogs();
 }
 
 

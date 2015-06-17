@@ -27,7 +27,7 @@ function requestCatalogs() {
 function ajaxServerCatalogResponse(){
 
 	// States (0 - uninitialized, 1 - open, 2 - sent, 3 - receiving) werden nicht verarbeitet
-	
+	console.log("received catalogs");
 	// State 4 - die Antwort des Servers liegt vollständig vor
 	if(request.readyState == 4){
 		var answer = request.responseXML.getElementsByTagName("catalogName");
@@ -74,11 +74,22 @@ function clickedCatalog(event){
  */
 function highlichtChoosenCatalog(catalogName){
 	
+	// wurde vom Spieleiter ein Katalog ausgewählt und ein neuer Spieler
+	// loggt sich ein, sieht der neue Spieler nich den aktiven Katalog
+	// Problem: Websocket epmfängt CatalogChange (Wahl des aktiven Katalogs) bevor
+	// eine Antwort über AJAX mit den verfügbarern Katalogen eintrifft
+	// Timeout würde helfen?
+	// window.setTimeout(code, 500);
+	//
+	// Test mit 
+	// alert("bla)";
+	
 	// get all catalogs and set background to default
     var catalogArray = window.document.getElementsByClassName("catalogList");
     for(var i = 0; i < catalogArray.length; i++) {
     	if(catalogArray[i].textContent == catalogName){
     		// hebe den aktiven Katalog vor
+    		console.log("bla");
     		catalogArray[i].style.backgroundColor="#ffa500";
     	} else {
     		// setze Farbe bei allen anderen Katalogen zurück
