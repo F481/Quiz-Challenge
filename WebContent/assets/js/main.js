@@ -153,6 +153,7 @@ function receiveWSMessage(message){
 			    // clean up main div
 			    document.getElementById("main").innerHTML = "<h1>Das Spiel wurde beendet!</h1>";
 			} else { // Fehler ist nicht fatal, Spiel wird nicht beendet
+				alert("Es ist ein Fehler aufgetreten: " + parsedJSONMessage.errorMessage);
 				console.log("Warning: " + parsedJSONMessage.errorMessage);
 			}
 			break;

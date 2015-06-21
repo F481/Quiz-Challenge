@@ -23,21 +23,34 @@ import application.Quiz;
 @ServerEndpoint("/SocketHandler")
 public class SocketHandler {
 	
-	private Player player;
-	
-	private Timer curTimeOut;
-	
 	Quiz quiz = Quiz.getInstance();
 	QuizError quizError = new QuizError();
 	
+	private Player player;	
+	private Timer curTimeOut;
+	
+	
+	
 	@OnOpen
 	// Ein Client meldet sich an und eröffnet eine neue WebSocket-Verbindung
-	public void open(Session session, EndpointConfig conf) {
+	public void open(Session session, EndpointConfig conf) throws IOException {
 		
 		ConnectionManager.addSession(session);
 		
-		System.out.println("Öffne Socket mit SessionID: " + session.getId());		
+		System.out.println("Öffne Socket mit SessionID: " + session.getId());
+		
+		// sende aktuellen / aktiven Katalog an Spieler
+		Catalog catalog = quiz.getCurrentCatalog();
+		if (catalog != null){
+			String catalogName = catalog.getName();
+			try {
+				session.getBasicRemote().sendText(new SocketJSONMessage(5, new Object[] { catalogName }).getJsonString());						
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}						
+		}
 	}
+	
 	
 	
 	@OnMessage
@@ -69,7 +82,7 @@ public class SocketHandler {
 				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
 					System.out.println("Login Error: Code: " + Integer.toString(quizError.getStatus()));
-					sendError(session, 1, "Spieler konnte nicht erstellt werden: " + quizError.getDescription());
+					sendError(session, 1, "Login nicht möglich: " + quizError.getDescription());
 				} 
 				// kein Fehler beim Erstellen des Spielers
 				else {
@@ -88,19 +101,6 @@ public class SocketHandler {
 					}
 					// sende aktualisierte Spielerliste an alle Spieler
 					sendPlayerList();
-					
-
-					// sende aktuellen / aktiven Katalog an Spieler
-					Catalog catalog = quiz.getCurrentCatalog();
-					if (catalog != null){
-						String catalogName = catalog.getName();
-						try {
-							// s.getBasicRemote().sendText(new SocketJSONMessage(5, sMessage.getMessage()).getJsonString());
-							session.getBasicRemote().sendText(new SocketJSONMessage(5, new Object[] { catalogName }).getJsonString());						
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}						
-					}
 				}
 				break;
 			case 5: // CatalogChange
@@ -235,7 +235,8 @@ public class SocketHandler {
 	// Client meldet sich wieder ab
 	public void close(Session session, CloseReason reason) {
 
-		if(player != null){			
+		// Spieler war bereits eingeloggt
+		if(player != null){		
 			if(player.getId() == 0){ // Spieler war Spielleiter
 				System.out.println("remove player (player was gamemaster!)");
 				quiz.removePlayer(player, quizError);
@@ -244,8 +245,8 @@ public class SocketHandler {
 				}
 				
 				// entferne Session
+				System.out.println("Entferne SessionID: " + session.getId());
 				ConnectionManager.SessionRemove(session);
-				System.out.println("close session");
 				
 				// sende Spielende an alle Spieler - Broadcast
 				sendErrorToAll(1, "Spielleiter hat das Spiel verlassen!");	
@@ -261,13 +262,17 @@ public class SocketHandler {
 				}
 				
 				// entferne Session
+				System.out.println("Entferne SessionID: " + session.getId());
 				ConnectionManager.SessionRemove(session);
-				System.out.println("close session");				
 
 				// es sind noch genug Spieler ( >= 2) vorhanden, sende aktualisierte Spielerliste an alle verbleibenden Spieler
 				sendPlayerList();
 			}
-		}		
+		} else { // Spieler war nicht eingeloggt
+			// entferne Session
+			System.out.println("Entferne SessionID: " + session.getId());			
+			ConnectionManager.SessionRemove(session);
+		}
 	}
 	
 	
@@ -377,7 +382,7 @@ public class SocketHandler {
 	/**
 	 * Methode um Fehlernachricht an Client zu senden
 	 * @param session SessionID des Spieler, an den die Nachricht versendet werden soll
-	 * @param fatal gibt an ob der Fehler fatal ist, falls ja wird das Spiel beendet
+	 * @param fatal ist fatal 1, wird das Spiel beendet
 	 * @param message gibt die Fehlernachricht an
 	 */
 	public static void sendError(Session session, int fatal, String message){
