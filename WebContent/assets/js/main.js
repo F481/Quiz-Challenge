@@ -41,6 +41,7 @@ function init(){
 
     // open websocket
     var url = 'ws:localhost:8080/Quiz-Challenge-Server/SocketHandler';
+    // var url = 'ws:fbe-wwwdev.hs-weingarten.de:8080/webprog05/tomcat/SocketHandler';
     socket = new WebSocket(url);
 
     // event handler websocket

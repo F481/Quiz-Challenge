@@ -27,6 +27,9 @@ public class SocketHandler {
 	
 	private Timer curTimeOut;
 	
+	Quiz quiz = Quiz.getInstance();
+	QuizError quizError = new QuizError();
+	
 	@OnOpen
 	// Ein Client meldet sich an und eröffnet eine neue WebSocket-Verbindung
 	public void open(Session session, EndpointConfig conf) {
@@ -38,11 +41,8 @@ public class SocketHandler {
 	}
 	
 	@OnMessage
-	public void receiveTextMessage(Session session, String msg, boolean last) throws IOException{
-	
-		Quiz quiz = Quiz.getInstance();
-		QuizError quizError = new QuizError();
-		
+	public void receiveTextMessage(Session session, String msg, boolean last) throws IOException{	
+
 		System.out.println("Nachricht empfangen: " + msg);		
 
 		SocketJSONMessage sMessage = null;
@@ -64,7 +64,7 @@ public class SocketHandler {
 			case 1: // LoginRequest
 				System.out.println("typ 1 empfangen - erstelle  neuen spieler");
 				// erzeuge Spieler mit Namen aus Paket
-				this.player = Quiz.getInstance().createPlayer(((String) sMessage.getMessage()[0]), quizError);
+				this.player = quiz.createPlayer(((String) sMessage.getMessage()[0]), quizError);
 				
 				// Fehler beim Erstellen des Spielers
 				if (quizError.isSet()) {
@@ -200,7 +200,7 @@ public class SocketHandler {
 				long rightAnswer = quiz.answerQuestion(player,(long) sMessage.getMessage()[0], quizError);
 				if (quizError.isSet()) {
 					System.out.println(quizError.getDescription());
-					sendError(session, 1, "AnswerQuestion fehlgeschlagen: "+quizError.getDescription());
+					sendError(session, 1, "AnswerQuestion fehlgeschlagen: " + quizError.getDescription());
 					return;
 				}
 				try {
@@ -238,10 +238,9 @@ public class SocketHandler {
 		if(player != null){			
 			if(player.getId() == 0){ // Spieler war Spielleiter
 				System.out.println("remove player (player was gamemaster!)");
-				QuizError qError = new QuizError();
-				Quiz.getInstance().removePlayer(player, qError);
-				if(qError.isSet()){
-					System.out.println("Remove Player Error: "+qError.getDescription());
+				quiz.removePlayer(player, quizError);
+				if(quizError.isSet()){
+					System.out.println("Remove Player Error: " + quizError.getDescription());
 				}
 				
 				// entferne Session
@@ -253,10 +252,9 @@ public class SocketHandler {
 				
 			} else { // Spieler war kein Spielleiter
 				System.out.println("remove player (not gamemaster)");
-				QuizError qError = new QuizError();
-				Quiz.getInstance().removePlayer(player, qError);
-				if(qError.isSet()){
-					System.out.println("Remove Player Error: "+qError.getDescription());
+				quiz.removePlayer(player, quizError);
+				if(quizError.isSet()){
+					System.out.println("Remove Player Error: " + quizError.getDescription());
 					// zu wenige Spieler -> beende Spiel
 					// sende Spielende an alle Spieler - Broadcast
 					sendErrorToAll(1, "Zu wenige Spieler!");	
@@ -279,7 +277,6 @@ public class SocketHandler {
 	public void sendPlayerList(){
 		
 		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
-		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
 			int id = Integer.parseInt(pTemp.getSessionID());
@@ -303,7 +300,6 @@ public class SocketHandler {
 	public void sendStartGame(){
 
 		// sende StartGame an alle Spieler - Broadcast		
-		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
 			int id = Integer.parseInt(pTemp.getSessionID());
@@ -332,7 +328,6 @@ public class SocketHandler {
 		
 		// hole Spielerinformationen (Name, SID, Punktezahl)
 		int playercount=0;
-		Quiz quiz = Quiz.getInstance();	
 		for(Player pTemp : quiz.getPlayerList()){  
 
 			player_Name[playercount] = pTemp.getName();
@@ -410,7 +405,7 @@ public class SocketHandler {
 			int id = Integer.parseInt(pTemp.getSessionID());
 			Session s = ConnectionManager.getSession(id);
 			// send error message
-			sendError(s, fatal, message);		
-		}		
-	}	
+			sendError(s, fatal, message);
+		}
+	}
 }

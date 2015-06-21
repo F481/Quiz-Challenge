@@ -102,6 +102,7 @@ public class FilesystemLoader implements CatalogLoader {
         
         // deshalb absoluter pfad ...
         String path = "C:\\Users\\dschwenk\\Documents\\eclipse\\workspace\\Quiz-Challenge-Server\\catalogs";
+        //String path = "/catalogs";
 
         
         File catalogFolder = new File(path);
