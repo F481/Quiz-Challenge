@@ -65,7 +65,9 @@ function init(){
 
     var buttonStart = window.document.getElementById("buttonStart");
     buttonStart.addEventListener("click",clickedStart,true);
-
+    
+	// request catalogs
+	requestCatalogs();
 }
 
 
@@ -237,9 +239,6 @@ function sendWSMessage(type){
  * Start-Button angepasst, Kataloge werden angefordert
  */
 function processSuccessfulLogin(){
-	
-	// request catalogs
-	requestCatalogs();
 	
 	// remove login button + name input field
 	var mainDiv = document.getElementById("main");

@@ -1,7 +1,7 @@
 /*
  * Funktion fragt via AJAX verfügbare Kataloge vom Server ab
  */
-function requestCatalogs() {
+function requestCatalogs(){
 	// prüefe ob Browser AJAX unterstützt
 	if (window.XMLHttpRequest){ // code for IE7+, Firefox, Chrome, Opera, Safari
 		// create AJAX-Request-Object

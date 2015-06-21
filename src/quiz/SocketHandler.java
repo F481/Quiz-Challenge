@@ -36,9 +36,9 @@ public class SocketHandler {
 		
 		ConnectionManager.addSession(session);
 		
-		System.out.println("Öffne Socket mit SessionID: " + session.getId());
-		
+		System.out.println("Öffne Socket mit SessionID: " + session.getId());		
 	}
+	
 	
 	@OnMessage
 	public void receiveTextMessage(Session session, String msg, boolean last) throws IOException{	
@@ -272,7 +272,7 @@ public class SocketHandler {
 	
 	
 	/**
-	 * Methoden sendet PlayerList (Nachricht mit dem Typ 6) an alle Spieler
+	 * Methode sendet PlayerList (Nachricht mit dem Typ 6) an alle Spieler
 	 */
 	public void sendPlayerList(){
 		
@@ -295,7 +295,7 @@ public class SocketHandler {
 
 
 	/**
-	 * Methoden sendet StartGame (Nachricht mit dem Typ 7) an alle Spieler
+	 * Methode sendet StartGame (Nachricht mit dem Typ 7) an alle Spieler
 	 */
 	public void sendStartGame(){
 
@@ -318,7 +318,7 @@ public class SocketHandler {
 	
 	
 	/**
-	 * Methoden sendet GameOver (Nachricht mit dem Typ 12) mit der jeweiligen Platzierung an alle Spieler
+	 * Methode sendet GameOver (Nachricht mit dem Typ 12) mit der jeweiligen Platzierung an alle Spieler
 	 */
 	public void sendGameOver(){
 				
@@ -375,7 +375,7 @@ public class SocketHandler {
 	
 
 	/**
-	 * Funktion um Fehlernachricht an Client zu senden
+	 * Methode um Fehlernachricht an Client zu senden
 	 * @param session SessionID des Spieler, an den die Nachricht versendet werden soll
 	 * @param fatal gibt an ob der Fehler fatal ist, falls ja wird das Spiel beendet
 	 * @param message gibt die Fehlernachricht an
@@ -393,7 +393,7 @@ public class SocketHandler {
 	
 	
 	/**
-	 * Funktion um Fehlernachricht an alle Clients zu senden
+	 * Methode um Fehlernachricht an alle Clients zu senden
 	 * @param fatal ist fatal 1, wird das Spiel beendet
 	 * @param message Fehlernachricht, die an den Client versendet wird
 	 */

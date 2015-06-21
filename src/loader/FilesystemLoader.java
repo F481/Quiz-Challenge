@@ -81,7 +81,6 @@ public class FilesystemLoader implements CatalogLoader {
         } catch (URISyntaxException e) {
             // Try to load from the root of the classpath
             dir = new File("/");
-        	//dir = new File("/catalogs");
         }
 
         /*
@@ -95,20 +94,13 @@ public class FilesystemLoader implements CatalogLoader {
         }
          */
         
-
-		// Dateien in Verzeichnis auslesen
-        // String path = "../catalogs";
-        // C:\Program Files (x86)\eclipse-standard-luna-R-win32\eclipse\..\catalogs
         
-        // deshalb absoluter pfad ...
-        String path = "C:\\Users\\dschwenk\\Documents\\eclipse\\workspace\\Quiz-Challenge-Server\\catalogs";
-        //String path = "/catalogs";
-
         
-        File catalogFolder = new File(path);
-    	// System.out.print("bla catalogFolder" + catalogFolder.getAbsolutePath() + "\n");
-        String[] files = listFilesInfolder(catalogFolder);	
-	
+    	//dir = new File("/catalogs");
+        dir = new File("C:\\Users\\dschwenk\\Documents\\eclipse\\workspace\\Quiz-Challenge-Server\\catalogs");
+
+
+        String[] files = listFilesInfolder(dir);
 
     	// Liste verwaltet die XML-Dateien (Fragenkataloge)
     	ArrayList<Document> xmlDocuments = new ArrayList<Document>();
@@ -140,7 +132,7 @@ public class FilesystemLoader implements CatalogLoader {
 	 */
 	private String[] listFilesInfolder(File folder) {
 		ArrayList<String> fileList = new ArrayList<String>();
-	    	// fuege der Liste alle Dateien aus dem Verzeichnis hinzu
+    	// fuege der Liste alle Dateien aus dem Verzeichnis hinzu
 		for (File fileEntry : folder.listFiles()) {
 	    	fileList.add(fileEntry.getAbsolutePath());
 	    }
