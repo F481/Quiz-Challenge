@@ -36,7 +36,8 @@ section {
 }
 
 #highscore {
-    height: 250px;
+    min-height: 250px;
+    height: auto;
     margin-top: 15px;
 }
 
