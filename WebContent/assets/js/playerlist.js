@@ -44,5 +44,10 @@ function updatePlayerList(playerlist){
 			buttonStart.textContent = "Spiel starten";
 			buttonStart.disabled = false;
 		}
+		else if((playerCount < 2) && (activeCatalog != "")){
+			var buttonStart = window.document.getElementById("buttonStart");
+			buttonStart.textContent = "Warte auf weitere Spieler ...";
+			buttonStart.disabled = true;
+		}		
 	}	
 }
