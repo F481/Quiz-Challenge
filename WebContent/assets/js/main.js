@@ -146,12 +146,14 @@ function receiveWSMessage(message){
 		case 255: // Error
 			console.log("Error: " + parsedJSONMessage.errorMessage);			
 			if(parsedJSONMessage.fatal == 1){ // Spiel beenden
-				alert("Es ist ein fataler Fehler aufgetreten: " + parsedJSONMessage.errorMessage + " Das Spiel wird beendet!");
-				// reload page to start new game?
-				// startNewGame(); --> function is not implemented yet
-				// tue etwas - Seite neu laden, Sppiel neu starten?
-			    // clean up main div
-			    document.getElementById("main").innerHTML = "<h1>Das Spiel wurde beendet!</h1>";
+				var confirmDialog = confirm("Es ist ein fataler Fehler aufgetreten: " + parsedJSONMessage.errorMessage + " Das Spiel wird beendet!\n\nNeues Spiel starten?");
+				if(confirmDialog){
+					// reload page
+					location.reload();
+				} else {
+					// clean up main div
+					document.getElementById("main").innerHTML = "<h1>Das Spiel wurde beendet!</h1><p><br><br><br><h3>Laden Sie die Seite neu um ein neues Spiel zu starten";					
+				}
 			} else { // Fehler ist nicht fatal, Spiel wird nicht beendet
 				alert("Es ist ein Fehler aufgetreten: " + parsedJSONMessage.errorMessage);
 				console.log("Warning: " + parsedJSONMessage.errorMessage);
@@ -427,15 +429,31 @@ function GameOver(parsedJSONMessage) {
 	questDiv.appendChild(title);
 	
 	rank = parsedJSONMessage.rank;
+	
+	var confirmDialog = false;
+	
 	if(rank == 1){
 		// Spiel gewonnen
-		alert("Glückwünsch. Sie haben das Spiel gewonnen!");
+		//alert("Glückwünsch. Sie haben das Spiel gewonnen!");
+		confirmDialog = confirm("Glückwünsch. Sie haben das Spiel gewonnen!\n\nNeues Spiel starten?");
 	} else {
 		// Spiel nicht gewonnen
-		alert("Glückwünsch. Sie wurden " + rank + ".!");
+		// alert("Glückwünsch. Sie wurden " + rank + ".!");
+		confirmDialog = confirm("Glückwünsch. Sie wurden " + rank + "!\n\nNeues Spiel starten?");
 	}
 	
-	// tue etwas - Seite neu laden, Sppiel neu starten?
-    // clean up main div
-    document.getElementById("main").innerHTML = "<h1>Das Spiel ist zu Ende!</h1>";	
+	console.log("Game over. Reload page: " + confirmDialog);
+	
+	// hat der Spieler mit Ja oder Nein auf den Dialog geantwortet?
+	if(confirmDialog){ // ja
+		// reload page
+		location.reload();
+	} else { // nein
+		// clean up main div
+		if(rank == 1){
+			document.getElementById("main").innerHTML = "<h1>Glückwünsch. Sie haben das Spiel gewonnen!</h1><p><br><br><br><h3>Laden Sie die Seite neu um ein neues Spiel zu starten";			
+		} else {
+			document.getElementById("main").innerHTML = "<h1>Glückwünsch. Sie wurden " + rank + "!</h1><p><br><br><br><h3>Laden Sie die Seite neu um ein neues Spiel zu starten";			
+		}					
+	}
 }
