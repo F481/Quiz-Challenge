@@ -86,8 +86,8 @@ public class SocketHandler {
 				} 
 				// kein Fehler beim Erstellen des Spielers
 				else {
-					// setzte Session ID für Spieler
-					this.player.setSessionID(session.getId());
+					// setzte Session für Spieler
+					this.player.setSession(session);
 					
 					// anlegen des Spielers war erfolgreich
 					try {
@@ -284,9 +284,8 @@ public class SocketHandler {
 		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
-			int id = Integer.parseInt(pTemp.getSessionID());
-			Session s = ConnectionManager.getSession(id);
-			System.out.println("sende typ 6 an spieler: " + id);
+			Session s = pTemp.getSession();
+			System.out.println("sende typ 6 an spieler: " + s.getId());
 			try {
 				// baue Nachricht + versende Nachricht
 				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
@@ -307,9 +306,8 @@ public class SocketHandler {
 		// sende StartGame an alle Spieler - Broadcast		
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
-			int id = Integer.parseInt(pTemp.getSessionID());
-			Session s = ConnectionManager.getSession(id);
-			System.out.println("sende typ 7 an spieler: " + id);
+			Session s = pTemp.getSession();
+			System.out.println("sende typ 7 an spieler: " + s.getId());
 			try {
 				// baue Nachricht + versende Nachricht
 				s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());				
@@ -328,7 +326,7 @@ public class SocketHandler {
 	public void sendGameOver(){
 				
 		String[] player_Name = new String[6];
-		String[] player_SID = new String[6];
+		Session[] player_SID = new Session[6];
 		long[] player_Score = new long[6];
 		
 		// hole Spielerinformationen (Name, SID, Punktezahl)
@@ -336,7 +334,7 @@ public class SocketHandler {
 		for(Player pTemp : quiz.getPlayerList()){  
 
 			player_Name[playercount] = pTemp.getName();
-			player_SID[playercount] = pTemp.getSessionID();
+			player_SID[playercount] = pTemp.getSession();
 			player_Score[playercount] = pTemp.getScore();
 			playercount++;
 		}
@@ -348,7 +346,7 @@ public class SocketHandler {
 				if(player_Score[j] < player_Score[j+1]){
 					long temp_Score = player_Score[j];
 					String temp_playerName = player_Name[j];
-					String temp_SID = player_SID[j];
+					Session temp_SID = player_SID[j];
 					
 					player_Score[j] = player_Score[j+1];
 					player_Name[j] = player_Name[j+1];
@@ -364,9 +362,8 @@ public class SocketHandler {
 		// sende Platzierung an jeden Spieler
 		for(int i=0;i<playercount;i++){
 			// hole Sessioninformationen
-			int id = Integer.parseInt(player_SID[i]);
-			Session s = ConnectionManager.getSession(id);
-			System.out.println("sende typ 12 an den spieler mit ID: " + id);
+			Session s = player_SID[i];
+			System.out.println("sende typ 12 an den spieler mit ID: " + s.getId());
 			try {
 				// baue Nachricht + versende Nachricht
 				s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{i+1}).getJsonString());
@@ -406,9 +403,8 @@ public class SocketHandler {
 		// sende Fehlernachricht an alle Sessions (Spieler) - Broadcast
 		Quiz quiz = Quiz.getInstance();
 		for(Player pTemp : quiz.getPlayerList()){ 
-			// get session ID of player
-			int id = Integer.parseInt(pTemp.getSessionID());
-			Session s = ConnectionManager.getSession(id);
+			// get session of player
+			Session s = pTemp.getSession();
 			// send error message
 			sendError(s, fatal, message);
 		}

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.websocket.Session;
+
 import error.QuizError;
 import error.QuizErrorType;
 
@@ -30,7 +32,7 @@ public class Player {
     private List<Question> questions;
     private TimerTask timeoutTask;
     
-    private String sessionID;
+    private Session session;
 
     /**
      * Constructs a new player with the given name.
@@ -238,11 +240,11 @@ public class Player {
         return ((score + 5) / 10) * 10;
     }
     
-    public void setSessionID(String sessionID){
-    	this.sessionID = sessionID;
+    public void setSession(Session session){
+    	this.session = session;
     }
     
-    public String getSessionID(){
-    	return this.sessionID;
+    public Session getSession(){
+    	return this.session;
     }
 }
