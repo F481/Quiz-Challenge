@@ -44,7 +44,10 @@ public class SocketHandler {
 		if (catalog != null){
 			String catalogName = catalog.getName();
 			try {
-				session.getBasicRemote().sendText(new SocketJSONMessage(5, new Object[] { catalogName }).getJsonString());						
+				// baue JSON-String mit aktiven Katalog		
+				String JSONString = "";
+				JSONString = new SocketJSONMessage(5, new Object[] { catalogName }).getJsonString();
+				sendJSON(session, JSONString);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}						
@@ -68,6 +71,9 @@ public class SocketHandler {
 			sendError(session, 0, "Fehlerhafte Nachricht erhalten!");
 		}
 		
+		// JSON-String der die Antwort erhält die an den Client gesendet wird
+		String JSONString = "";
+		
 		System.out.println("Nachricht auswerten: " + msg);
 		
 		// werte Nachrichtentyp aus
@@ -89,16 +95,16 @@ public class SocketHandler {
 					// setzte Session für Spieler
 					this.player.setSession(session);
 					
-					// anlegen des Spielers war erfolgreich
+					// anlegen des Spielers war erfolgreich -> sende LoginResponseOK (Nachricht mit Typ 2)
 					try {
+						// baue JSON-String mit LoginResponseOK + Spieler-ID
+						JSONString = new SocketJSONMessage(2, new Object[] { player.getId() }).getJsonString();
 						System.out.println("sende LoginResponseOK");
-						// sende LoginResponseOK mit Spieler-ID
-						session.getBasicRemote().sendText(new SocketJSONMessage(2, new Object[] { player.getId() }).getJsonString());
-					} catch (JSONException e2) {
-						// TODO Auto-generated catch block
-						e2.printStackTrace();
-						sendError(session, 1, "LoginResponseOK konnte nicht erstellt werden!");
-					}
+						sendJSON(session, JSONString);	
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}					
+					
 					// sende aktualisierte Spielerliste an alle Spieler
 					sendPlayerList();
 				}
@@ -113,17 +119,15 @@ public class SocketHandler {
 					sendError(session, 1, "Katalog konnte nicht ausgewählt werden: " + quizError.getDescription());
 					return;
 				}
+
 				// sende CatalogChange an alle Clients - Broadcast
-				for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
-					System.out.println("sende typ 5 an spieler: " + i);
-					Session s = ConnectionManager.getSession(i);
-					try {
-						s.getBasicRemote().sendText(new SocketJSONMessage(5, sMessage.getMessage()).getJsonString());
-						
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}				
+				try {
+					// baue JSON-String mit aktiven Katalog		
+					JSONString = new SocketJSONMessage(5, sMessage.getMessage()).getJsonString();
+					sendCatalogChange(JSONString);					
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 				break;
 			case 7: // StartGame
 				System.out.println("typ 7 empfangen - starte Spiel");
@@ -183,11 +187,12 @@ public class SocketHandler {
 						e.printStackTrace();
 					}
 					try {
-						// senden (Frage mit Antworten + Timeout an Client)
-						session.getBasicRemote().sendText(
-								new SocketJSONMessage(9, new Object[] { question.getQuestion(),
-										answers[0], answers[1], answers[2], answers[3],
-										(int) (question.getTimeout()/1000) }).getJsonString());
+						// baue JSON-String: Frage mit Antworten + Timeout						
+						JSONString = new SocketJSONMessage(9, new Object[] { question.getQuestion(),
+								answers[0], answers[1], answers[2], answers[3],
+								(int) (question.getTimeout()/1000) }).getJsonString();
+						// sende JSON-String an Spieler
+						sendJSON(session, JSONString);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -206,8 +211,10 @@ public class SocketHandler {
 				try {
 					// sende QuestionResult
 					System.out.println("index right answer: " + rightAnswer);
-					// Parameter false -> Timeout nicht abgelaufen + Index der richtigen Antwort
-					session.getBasicRemote().sendText(new SocketJSONMessage(11, new Object[] { false, rightAnswer }).getJsonString());
+					// baue JSON-String: Parameter false -> Timeout nicht abgelaufen + Index der richtigen Antwort
+					JSONString = new SocketJSONMessage(11, new Object[] { false, rightAnswer }).getJsonString();
+					// sende JSON-String an Spieler
+					sendJSON(session, JSONString);
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -276,25 +283,59 @@ public class SocketHandler {
 	}
 	
 	
+	
+	/**
+	 * Methode um Nachricht via Websocket an Spieler zu senden
+	 * @param session Session an die gesendet wird
+	 * @param JSONString JSON-String der gesendet wird
+	 */
+	public static synchronized void sendJSON(Session session, String JSONString) {
+		try {
+			// sende JSON-String via Websocket an Spieler
+			session.getBasicRemote().sendText(JSONString);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 	/**
 	 * Methode sendet PlayerList (Nachricht mit dem Typ 6) an alle Spieler
 	 */
 	public void sendPlayerList(){
 		
+		// baue Spielerliste JSON-String
+		String JSONString = "";
+		try {
+			JSONString = new SocketJSONMessage(6).getJsonString();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		// sende aktualisierte Spielerliste an alle Spieler - Broadcast		
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
 			Session s = pTemp.getSession();
-			System.out.println("sende typ 6 an spieler: " + s.getId());
-			try {
-				// baue Nachricht + versende Nachricht
-				s.getBasicRemote().sendText(new SocketJSONMessage(6).getJsonString());				
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}	
+			System.out.println("sende typ 6 an spieler: " + s.getId());			
+			sendJSON(s, JSONString);
 		}
+	}
+
+	
+	/**
+	 * Metode sendet den aktiven Katalog an alle Spieler / Sessions
+	 * @param JSONString
+	 */
+	public void sendCatalogChange(String JSONString){		
+		
+		// sende CatalogChange an alle Clients - Broadcast
+		for (int i = 0; i < ConnectionManager.SessionCount(); i++) {
+			System.out.println("sende typ 5 an spieler: " + i);
+			Session s = ConnectionManager.getSession(i);
+			sendJSON(s, JSONString);
+		}		
 	}
 
 
@@ -302,20 +343,22 @@ public class SocketHandler {
 	 * Methode sendet StartGame (Nachricht mit dem Typ 7) an alle Spieler
 	 */
 	public void sendStartGame(){
+		
+		// baue StartGame JSON-String
+		String JSONString = "";
+		try {
+			JSONString = new SocketJSONMessage(7).getJsonString();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 
 		// sende StartGame an alle Spieler - Broadcast		
 		for(Player pTemp : quiz.getPlayerList()){  
 			// hole Sessioninformationen
 			Session s = pTemp.getSession();
 			System.out.println("sende typ 7 an spieler: " + s.getId());
-			try {
-				// baue Nachricht + versende Nachricht
-				s.getBasicRemote().sendText(new SocketJSONMessage(7).getJsonString());				
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}	
+			sendJSON(s, JSONString);
 		}		
 	}
 	
@@ -361,17 +404,21 @@ public class SocketHandler {
 
 		// sende Platzierung an jeden Spieler
 		for(int i=0;i<playercount;i++){
+			
+			// baue GameOver JSON-String
+			String JSONString = "";
+			try {
+				JSONString = new SocketJSONMessage(12, new Object[]{i+1}).getJsonString();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
 			// hole Sessioninformationen
 			Session s = player_SID[i];
 			System.out.println("sende typ 12 an den spieler mit ID: " + s.getId());
-			try {
-				// baue Nachricht + versende Nachricht
-				s.getBasicRemote().sendText(new SocketJSONMessage(12, new Object[]{i+1}).getJsonString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}			
+			
+			sendJSON(s, JSONString);		
 		}
 	}
 	
@@ -384,13 +431,16 @@ public class SocketHandler {
 	 */
 	public static void sendError(Session session, int fatal, String message){
 
+		// baue Error JSON-String
+		String JSONString = "";
 		try {
-			// build JSON-String and send error message
-			session.getBasicRemote().sendText(new SocketJSONMessage(255, new Object[]{fatal, message}).getJsonString());
-		} catch (JSONException | IOException e) {
+			JSONString = new SocketJSONMessage(255, new Object[]{fatal, message}).getJsonString();
+		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		sendJSON(session, JSONString);
 	}
 	
 	
