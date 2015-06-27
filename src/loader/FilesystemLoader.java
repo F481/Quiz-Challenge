@@ -93,13 +93,16 @@ public class FilesystemLoader implements CatalogLoader {
             }
         }
          */
-        
-        
-        
-    	//dir = new File("/catalogs");
-        dir = new File("C:\\Users\\dschwenk\\Documents\\eclipse\\workspace\\Quiz-Challenge-Server\\catalogs");
 
-
+        
+        // catalog path on local machine
+        // dir = new File("C:\\Users\\dschwenk\\Documents\\eclipse\\workspace\\Quiz-Challenge-Server\\catalogs");
+        
+        // (used absolute path as tomcat integrated in eclipse does not uses projectfolder/WEB-INF/classes as 'root' path (like 
+        // later the Hochschule Tomcat), instead Tomcat program folder is used ("C:\Program Files (x86)\Tomcat\apache-tomcat-8.0.21-windows-x86\apache-tomcat-8.0.21\bin"))
+        
+        
+        // get file names
         String[] files = listFilesInfolder(dir);
 
     	// Liste verwaltet die XML-Dateien (Fragenkataloge)

@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TimerTask;
 
-import javax.websocket.Session;
-
 import error.QuizError;
 import error.QuizErrorType;
 import loader.CatalogLoader;
@@ -263,8 +261,7 @@ public class Quiz {
         }
         */
     	if (this.loader == null) {
-    		this.loader = new FilesystemLoader("");
-    		//this.loader = new FilesystemLoader("catalogs");
+    		this.loader = new FilesystemLoader("catalogs");
     	}
     	return this.loader;
     }

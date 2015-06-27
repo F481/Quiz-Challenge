@@ -26,7 +26,7 @@ public class SocketHandler {
 	Quiz quiz = Quiz.getInstance();
 	QuizError quizError = new QuizError();
 	
-	private Player player;	
+	private Player player;
 	private Timer curTimeOut;
 	
 	
